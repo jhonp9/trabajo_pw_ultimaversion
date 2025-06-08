@@ -1,0 +1,24 @@
+// Colores
+$primary-color: #00ff88;
+$primary-dark: #007944;
+$primary-light: #00cc6a;
+$dark-color: #121212;
+$darker-color: #0a0a0a;
+$light-color: #1e1e1e;
+$lighter-color: #2a2a2a;
+$text-color: #ffffff;
+$text-secondary: #cccccc;
+
+// Bordes
+$border-radius: 8px;
+$border-primary: 2px solid $primary-color;
+$border-light: 1px solid #333;
+
+// Sombras
+$shadow-primary: 0 0 15px rgba($primary-color, 0.2);
+$shadow-card: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+// Transiciones
+$transition-fast: all 0.2s ease;
+$transition-medium: all 0.3s ease;
+$transition-slow: all 0.5s ease;

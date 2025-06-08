@@ -1,0 +1,62 @@
+.navbar {
+  background-color: transparent;
+  padding: 1rem 0;
+  font-family: 'Poppins', sans-serif;
+
+  &-brand {
+    font-weight: 600;
+    font-size: 1.8rem;
+    color: $primary-color;
+    display: flex;
+    align-items: center;
+    transition: $transition-medium;
+
+    &:hover {
+      color: lighten($primary-color, 10%);
+    }
+
+    img {
+      height: 40px;
+      margin-right: 10px;
+    }
+  }
+
+  .nav-link {
+    color: $text-secondary;
+    padding: 0.5rem 1rem;
+    transition: $transition-fast;
+
+    &:hover {
+      color: $primary-color;
+      transform: translateY(-2px);
+    }
+  }
+
+  .cart-icon {
+    position: relative;
+    color: $text-color;
+    font-size: 1.5rem;
+    transition: $transition-fast;
+
+    &:hover {
+      color: $primary-color;
+      transform: scale(1.1);
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-color: $primary-color;
+      color: $dark-color;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+  }
+}
