@@ -17,8 +17,8 @@ const Navbar = () => {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto">
               <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>Casa</a></li>
-              <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/game-catalog'); }}>Categorias</a></li>
-              <li className="nav-item"><a className="nav-link" href="#">Juegos mas vendidos</a></li>
+              <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/categorias'); }}>Categorias</a></li>
+              <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/juegos-mas-vendidos'); }}>Juegos mas vendidos</a></li>
               <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/mejores-valorados'); }}>Mejores valorados</a></li>
             </ul>
             <div className="d-flex">

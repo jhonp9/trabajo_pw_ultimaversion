@@ -4,8 +4,11 @@ export interface Juego {
   title: string;
   description: string;
   price: number;
+  sales: number;
   rating: number;
   images: string[];
+  genres: string[];
+  platforms: string[];
   requirements: {
     minimum: string[];
     recommended: string[];
