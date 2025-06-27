@@ -13,6 +13,13 @@ import  ForgotPassword  from './pages/ForgotPassword';
 import ProfilePage from './pages/Perfil';
 import MyGamesPage from './pages/MisJuegos';
 import SearchPage from './pages/Search';
+import AdminLayout from './admin/AdminLayout';
+import Dashboard from './admin/Dashboard';
+import GamesManagement from './admin/GamesManagement';
+import UsersManagement from './admin/UsersManagement';
+import NewsManagement from './admin/NewsManagement';
+import Analytics from './admin/Analytics';
+import NewsPage from './pages/NewPage';
 
 function App() {
   return (
@@ -32,6 +39,13 @@ function App() {
           <Route path="/verify-user" element={<VerifyUser />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/busqueda" element={<SearchPage />} />
+          <Route path="/admin" element={<AdminLayout />}/>
+          <Route index element={<Dashboard />} />
+          <Route path="games" element={<GamesManagement />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="news" element={<NewsManagement />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="/noticias" element={<NewsPage />} />
         </Routes>
       </Router>
     </CartProvider>

@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
 interface User {
+  id: string;
   email: string;
   name: string;
   role: string;
+  createdAt: Date;
 }
 
 interface AuthContextType {
@@ -20,12 +22,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (email: string, password: string) => {
     // Lógica de autenticación (simplificada)
-    if ((email === 'usuario' && password === 'usuario') || 
-        (email === 'admin' && password === 'admin')) {
+    if (email === 'usuario' && password === 'usuario') {
       setUser({
+        id: 'user-1',
         email,
-        name: email === 'admin' ? 'Administrador' : 'Usuario',
-        role: email === 'admin' ? 'admin' : 'user'
+        name: 'Usuario',
+        role: 'user',
+        createdAt: new Date()
+      });
+      return true;
+    }
+    if (email === 'admin@gamehub.com' && password === 'admin123') {
+      setUser({
+        id: 'admin-1',
+        name: 'Administrador',
+        email,
+        role: 'admin',
+        createdAt: new Date()
       });
       return true;
     }
