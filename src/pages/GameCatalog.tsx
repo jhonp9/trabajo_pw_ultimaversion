@@ -32,13 +32,14 @@ const GameCatalog = () => {
     <div style={{ backgroundColor: '#0a0a0a' , minHeight: '100vh'}}>
     <Navbar />
     <div className="catalog-page">
-      <div className="container">
+      <div className="">
         <h1 className="page-title">Catálogo de Juegos</h1>
         
-        <div className="catalog-content">
-          <FilterSidebar filters={filters} setFilters={setFilters} />
-          
-          <div className="games-section">
+        <div className="catalog-content row">
+          <div  className="col-md-2">
+            <FilterSidebar filters={filters} setFilters={setFilters} />
+          </div>
+          <div className="col-md-8">
             <JuegosLista juegos={filteredGames} />
           </div>
         </div>

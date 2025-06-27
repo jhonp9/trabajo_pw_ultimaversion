@@ -3,6 +3,7 @@ import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../Auth/AuthContext';
 import type { Juego, Review } from '../../types/juego';
+import ReactPlayer from 'react-player';
 
 interface JuegoModalProps {
   show: boolean;
@@ -54,6 +55,12 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
     ));
   };
 
+  const getYouTubeId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered scrollable className="game-modal">
       <Modal.Header closeButton>
@@ -85,11 +92,12 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
         {/* Trailer del juego */}
         <h4 className="mb-3">Trailer del Juego</h4>
         <div className="game-trailer mb-4 ratio ratio-16x9">
-          <iframe 
-            src={juego.trailerUrl} 
-            title={`${juego.title} Trailer`} 
-            allowFullScreen
-          ></iframe>
+          <ReactPlayer
+    url={`https://www.youtube.com/watch?v=${juego.trailerUrl}`}
+    width="100%"
+    height="100%"
+    controls={true}
+  />
         </div>
         
         {/* Imágenes de gameplay */}

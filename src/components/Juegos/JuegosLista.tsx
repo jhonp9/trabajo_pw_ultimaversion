@@ -19,7 +19,7 @@ const JuegosLista = ({ juegos }: JuegosListaProps) => {
     <section className="game-carousel">
       <div className="game-list">
         {juegos.map((juego) => (
-          <div key={juego.id} className="col-6 col-md-4 col-lg-3">
+          <div key={juego.id} className="col-6 col-md-8">
             <div 
               className="game-card" 
               onClick={() => handleGameClick(juego)}

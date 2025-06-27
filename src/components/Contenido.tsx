@@ -21,7 +21,7 @@ const Contenido = () => {
         <Carousel.Item>
           <div className="carousel-image-container">
             <img
-              src="https://via.placeholder.com/800x600/FF0000"
+              src="https://i.kinja-img.com/image/upload/c_fit,q_60,w_645/384284bce0e44b871ed5849d0b461561.jpg"
               alt="Ofertas Especiales"
             />
           </div>
@@ -34,7 +34,7 @@ const Contenido = () => {
         <Carousel.Item>
           <div className="carousel-image-container">
             <img
-              src="https://via.placeholder.com/600x400/00FF00"
+              src="https://areajugones.sport.es/wp-content/uploads/2021/07/10-pelis-videojuegos.jpg"
               alt="Próximos Lanzamientos"
             />
           </div>
