@@ -1,7 +1,8 @@
-import React from 'react';
-import { Modal, Button, Row, Col } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { useCart } from '../../context/CartContext';
-import type { Juego } from '../../types/juego';
+import { useAuth } from '../Auth/AuthContext';
+import type { Juego, Review } from '../../types/juego';
 
 interface JuegoModalProps {
   show: boolean;
@@ -11,6 +12,10 @@ interface JuegoModalProps {
 
 const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
+  const [reviews, setReviews] = useState<Review[]>(juego?.reviews || []);
 
   if (!juego) return null;
 
@@ -21,6 +26,32 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
       price: juego.price
     });
     onHide();
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user || !comment || rating === 0) return;
+    
+    const newReview: Review = {
+      id: Date.now().toString(),
+      author: user.name || 'Anónimo',
+      rating,
+      comment,
+      date: new Date().toLocaleDateString()
+    };
+    
+    setReviews([...reviews, newReview]);
+    setRating(0);
+    setComment('');
+  };
+
+  const renderStars = (rating: number) => {
+    return [...Array(5)].map((_, i) => (
+      i < rating ? 
+        <span key={i} style={{ color: '#ffc107' }}>★</span> : 
+        <span key={i}>☆</span>
+    ));
   };
 
   return (
@@ -95,6 +126,75 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
             </ul>
           </Col>
         </Row>
+
+        {/* Sección de Reseñas */}
+        <h4 className="mt-4 mb-3">Reseñas</h4>
+        
+        {reviews.length === 0 ? (
+          <p>No hay reseñas todavía. ¡Sé el primero en opinar!</p>
+        ) : (
+          <div className="reviews-container mb-4">
+            {reviews.map((review) => (
+              <div key={review.id} className="review-item mb-3 p-3" style={{ backgroundColor: '#1e1e1e', borderRadius: '8px' }}>
+                <div className="d-flex justify-content-between mb-2">
+                  <strong>{review.author}</strong>
+                  <small className="text-muted">{review.date}</small>
+                </div>
+                <div className="mb-2">
+                  {renderStars(review.rating)}
+                </div>
+                <p>{review.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Formulario de Reseña */}
+        {user ? (
+          <Form onSubmit={handleSubmitReview} className="review-form">
+            <h5>Deja tu reseña</h5>
+            <Form.Group className="mb-3">
+              <Form.Label>Tu calificación</Form.Label>
+              <div className="rating-stars">
+                {[...Array(5)].map((_, i) => (
+                  <span 
+                    key={i} 
+                    onClick={() => setRating(i + 1)}
+                    style={{ 
+                      cursor: 'pointer', 
+                      fontSize: '1.5rem',
+                      color: i < rating ? '#ffc107' : '#6c757d'
+                    }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Tu comentario</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="¿Qué te pareció este juego?"
+                required
+              />
+            </Form.Group>
+            
+            <Button variant="primary" type="submit">
+              Enviar Reseña
+            </Button>
+          </Form>
+        ) : (
+          <div className="alert alert-info">
+            <i className="fas fa-info-circle me-2"></i>
+            Debes <a href="/login" className="alert-link">iniciar sesión</a> para dejar una reseña.
+          </div>
+        )}
+
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Cerrar</Button>

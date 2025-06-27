@@ -1452,3 +1452,157 @@ body {
         margin-bottom: 0.5rem;
     }
 }
+
+
+/* Estilos para el formulario de pago */
+.payment-form {
+  background-color: $darker-color;
+  padding: 1rem;
+  border-radius: $border-radius;
+  
+  .form-label {
+    color: $text-secondary;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-control {
+    background-color: $light-color !important;
+    border: $border-light !important;
+    color: $text-color !important;
+    
+    &:focus {
+      border-color: $primary-color !important;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25) !important;
+    }
+  }
+}
+
+/* Estilos para el recibo */
+.confirm-content {
+  text-align: center;
+  
+  h5 {
+    color: $primary-color;
+  }
+  
+  .fw-bold {
+    color: $text-color;
+  }
+}
+
+
+.auth-info {
+  background-color: $darker-color;
+  padding: 1rem;
+  border-radius: $border-radius;
+  margin-bottom: 1rem;
+
+  p {
+    margin-bottom: 0.5rem;
+  }
+
+  .user-email {
+    font-weight: bold;
+    color: $primary-color;
+  }
+}
+
+.payment-form {
+  .form-group {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: $text-secondary;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      background-color: $light-color;
+      border: $border-light;
+      color: $text-color;
+      border-radius: $border-radius;
+    }
+  }
+}
+
+
+/* Estilos para la búsqueda */
+.search-container {
+  position: relative;
+  width: 250px;
+  
+  @media (min-width: 768px) {
+    width: 300px;
+  }
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: $light-color;
+  border: $border-light;
+  border-radius: $border-radius;
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: $shadow-card;
+  
+  .search-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: $transition-fast;
+    
+    &:hover {
+      background-color: rgba($primary-color, 0.1);
+    }
+    
+    &-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 0.75rem;
+    }
+    
+    &-info {
+      flex: 1;
+      
+      h5 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        color: $text-color;
+      }
+    }
+    
+    &-price {
+      font-size: 0.8rem;
+      color: $primary-color;
+      font-weight: bold;
+    }
+  }
+  
+  .no-results {
+    padding: 1rem;
+    color: $text-secondary;
+    text-align: center;
+  }
+}
+
+/* Estilos para la página de resultados */
+.page-title {
+  color: $primary-color;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  
+  @media (min-width: 768px) {
+    font-size: 2.2rem;
+  }
+}

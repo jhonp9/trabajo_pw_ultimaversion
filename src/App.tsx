@@ -12,6 +12,7 @@ import { ResetPassword } from './pages/ResetPassword';
 import  ForgotPassword  from './pages/ForgotPassword';
 import ProfilePage from './pages/Perfil';
 import MyGamesPage from './pages/MisJuegos';
+import SearchPage from './pages/Search';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/verify-with-email" element={<VerifyWithEmail />} />
           <Route path="/verify-user" element={<VerifyUser />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/busqueda" element={<SearchPage />} />
         </Routes>
       </Router>
     </CartProvider>

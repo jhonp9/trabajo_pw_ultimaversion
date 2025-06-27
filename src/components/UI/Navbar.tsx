@@ -2,13 +2,62 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from '../../context/CartContext';
 import { Button } from "react-bootstrap";
 import { useAuth } from '../Auth/AuthContext';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { Juego } from "../../types/juego";
+import { gamesData } from "../../data/gamesData";
+import SearchResults from "./SearchResults";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const { itemsCount, setShowCart } = useCart();
     const { user, logout } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<Juego[]>([]);
+    const [showResults, setShowResults] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+
+    // Manejar búsqueda en tiempo real
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setSearchResults([]);
+            return;
+        }
+
+        const results = gamesData.filter(juego =>
+            juego.title.toLowerCase().includes(searchQuery.toLowerCase())
+        ).slice(0, 5); // Mostrar máximo 5 resultados
+
+        setSearchResults(results);
+    }, [searchQuery]);
+
+    // Cerrar resultados al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowResults(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/busqueda?q=${encodeURIComponent(searchQuery)}`);
+            setShowResults(false);
+            setSearchQuery('');
+        }
+    };
+
+    const handleSelectGame = (juego: Juego) => {
+        setSearchQuery('');
+        setShowResults(false);
+    };
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark">
@@ -28,13 +77,37 @@ const Navbar = () => {
                         <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/mejores-valorados'); }}>Mejores valorados</a></li>
                     </ul>
                     <div className="d-flex">
-                        <div className="input-group">
-                            <input type="text" className="form-control" placeholder="Buscar" />
-                            <button className="btn btn-outline-primary" type="button">
-                                <i className="fas fa-search"></i>
-                            </button>
+                        <div className="search-container position-relative" ref={searchRef}>
+                            <form className="input-group" onSubmit={handleSearch}>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="Buscar juegos..." 
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setShowResults(true);
+                                    }}
+                                    onFocus={() => setShowResults(true)}
+                                />
+                                <button className="btn btn-outline-primary" type="submit">
+                                    <i className="fas fa-search"></i>
+                                </button>
+                            </form>
+                            {showResults && searchQuery && (
+                                <SearchResults 
+                                    results={searchResults} 
+                                    onSelect={handleSelectGame}
+                                    query={searchQuery}
+                                />
+                            )}
                         </div>
-                        <button className="cart-icon mx-2" style={{ backgroundColor: "#0a0a0a" }} onClick={() => setShowCart(true)} aria-label="Abrir carrito">
+                        <button 
+                            className="cart-icon mx-2" 
+                            style={{ backgroundColor: "#0a0a0a" }} 
+                            onClick={() => setShowCart(true)} 
+                            aria-label="Abrir carrito"
+                        >
                             <i className="fas fa-shopping-cart"></i>
                             {itemsCount > 0 && (
                                 <span className="cart-count">{itemsCount}</span>

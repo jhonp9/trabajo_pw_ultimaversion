@@ -16,8 +16,16 @@ export const gamesData: Juego[] = [
       minimum: ["CPU: Intel Core i5-2500K", "GPU: NVIDIA GTX 660", "RAM: 6GB"],
       recommended: ["CPU: Intel Core i7-3770", "GPU: NVIDIA GTX 770", "RAM: 8GB"]
     },
-    trailerUrl: "https://www.youtube.com/watch?v=XYZ123"
-  },
+    trailerUrl: "https://www.youtube.com/watch?v=XYZ123",
+    reviews: [
+      {
+        id: "1",
+        author: "ola",
+        rating: 4,
+        comment: "bueno",
+        date: "mayo"
+  }]
+},
   {
     id: 2,
     title: "Cyberpunk 2077",
@@ -33,7 +41,15 @@ export const gamesData: Juego[] = [
       minimum: ["CPU: Intel Core i5-3570K", "GPU: NVIDIA GTX 780", "RAM: 8GB"],
       recommended: ["CPU: Intel Core i7-4790", "GPU: NVIDIA GTX 1060", "RAM: 12GB"]
     },
-    trailerUrl: "https://www.youtube.com/watch?v=ABC456"
+    trailerUrl: "https://www.youtube.com/watch?v=ABC456",
+    reviews: [
+      {
+        id: "1",
+        author: "ola",
+        rating: 4,
+        comment: "bueno",
+        date: "mayo"
+  }]
   }
   // ... más juegos
 ];

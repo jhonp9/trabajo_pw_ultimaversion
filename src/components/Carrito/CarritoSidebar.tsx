@@ -1,6 +1,7 @@
 import { useCart } from "../../context/CartContext";
 import { useState } from 'react';
 import Confirmacion from './Confirmacion';
+import { useAuth } from "../Auth/AuthContext";
 
 const CarritoSidebar = () => {
   const { 
@@ -14,17 +15,31 @@ const CarritoSidebar = () => {
     setShowCart,
     showConfirm,
     setShowConfirm,
-    checkout
+    checkout,
+    showPayment,
+    setShowPayment,
+    showReceipt,
+    setShowReceipt,
+    processPayment
   } = useCart();
 
+  const { user } = useAuth();
   const [isClosing, setIsClosing] = useState(false);
-
+  
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       setShowCart(false);
       setIsClosing(false);
     }, 300);
+  };
+
+  const handleCheckout = () => {
+    if (!user) {
+      setShowConfirm(true); // Mostrar mensaje de login requerido
+      return;
+    }
+    setShowPayment(true); // Mostrar formulario de pago
   };
 
   return (
@@ -111,13 +126,13 @@ const CarritoSidebar = () => {
                 <div className="cart-footer">
                   <button 
                     className="btn btn-checkout"
-                    onClick={() => checkout()}
+                    onClick={handleCheckout}
                   >
                     Finalizar Compra
                   </button>
                   <button 
                     className="btn btn-clear"
-                    onClick={() => clearCart()}
+                    onClick={() => setShowConfirm(true)}
                   >
                     Vaciar Carrito
                   </button>
@@ -128,14 +143,46 @@ const CarritoSidebar = () => {
         </div>
       </div>
 
+      {/* Modal de confirmación para vaciar carrito */}
       {showConfirm && (
         <Confirmacion 
-          message="¿Estás seguro de que quieres vaciar el carrito?"
+          message={user ? 
+            "¿Estás seguro de que quieres vaciar el carrito?" : 
+            "Debes iniciar sesión para realizar una compra"}
           onConfirm={() => {
+            if (user) {
+              clearCart();
+            }
             setShowConfirm(false);
-            setShowCart(false);
           }}
           onCancel={() => setShowConfirm(false)}
+          type={user ? 'clear' : 'checkout'}
+        />
+      )}
+
+      {/* Modal de pago */}
+      {showPayment && (
+        <Confirmacion 
+          message="Ingresa los datos de tu tarjeta"
+          onConfirm={processPayment}
+          onCancel={() => setShowPayment(false)}
+          type="payment"
+        />
+      )}
+
+      {/* Modal de recibo */}
+      {showReceipt && (
+        <Confirmacion 
+          message={
+            <>
+              <h5 className="mb-3">¡Compra realizada con éxito!</h5>
+              <p>Las claves de tus juegos y la boleta han sido enviadas a:</p>
+              <p className="fw-bold">{user?.email}</p>
+              <p className="small text-muted mt-3">Revisa tu bandeja de entrada o spam.</p>
+            </>
+          }
+          onConfirm={() => setShowReceipt(false)}
+          onCancel={() => setShowReceipt(false)}
         />
       )}
     </>
