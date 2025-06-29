@@ -54,7 +54,7 @@ const Navbar = () => {
         }
     };
 
-    const handleSelectGame = (juego: Juego) => {
+    const handleSelectGame = () => {
         setSearchQuery('');
         setShowResults(false);
     };

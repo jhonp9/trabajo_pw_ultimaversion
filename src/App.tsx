@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import MainPage from './pages/MainPage';
 import GameCatalog from './pages/GameCatalog';

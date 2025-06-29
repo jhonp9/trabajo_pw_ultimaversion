@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
-import type { Juego, Review } from '../types/juego';
+import type { Juego } from '../types/juego';
 import type { Noticia } from '../types/noticia';
 import { gamesData } from '../data/gamesData';
 import { noticiasData } from '../data/noticiasData';
