@@ -11,6 +11,10 @@ const loadGamesData = () => {
   const savedData = localStorage.getItem('gamesData');
   return savedData ? JSON.parse(savedData) : gamesData;
 };
+const loadUsuariosData = () => {
+  const savedData = localStorage.getItem('usersData');
+  return savedData ? JSON.parse(savedData) : usersData;
+};
 
 // Función para cargar noticias guardadas
 const loadNoticiasData = () => {
@@ -23,7 +27,7 @@ const saveGamesData = (data: any) => {
   localStorage.setItem('gamesData', JSON.stringify(data));
 };
 
-const saveGamesUser = (data: any) => {
+const saveUserData = (data: any) => {
   localStorage.setItem('usersData', JSON.stringify(data));
 };
 
@@ -55,25 +59,21 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [juegos, setJuegos] = useState<Juego[]>(loadGamesData());
   const [noticias, setNoticias] = useState<Noticia[]>(loadNoticiasData());
-  const [usuarios, setUsuarios] = useState<Usuario[]>(usersData);
+  const [usuarios, setUsuarios] = useState<Usuario[]>(loadUsuariosData());
   
   // Carga inicial de datos
   useEffect(() => {
     setJuegos(loadGamesData());
     setNoticias(loadNoticiasData());
-    
-    // Simular carga de usuarios
-    setUsuarios([
-      { email: 'admin@example.com', name: 'Admin', role: 'admin' },
-      { email: 'user1@example.com', name: 'Usuario 1', role: 'user' },
-      { email: 'user2@example.com', name: 'Usuario 2', role: 'user' },
-    ]);
+    setUsuarios(loadUsuariosData());
   }, []);
 
   const resetData = () => {
   localStorage.removeItem('gamesData');
+  localStorage.removeItem('usersData');
   localStorage.removeItem('noticiasData');
   setJuegos(gamesData);
+  setUsuarios(usersData);
   setNoticias(noticiasData);
 };
 
@@ -89,23 +89,33 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const loadInitialData = () => {
     setJuegos(loadGamesData());
+    setNoticias(loadNoticiasData());
+    setUsuarios(loadUsuariosData());
   };
 
   const addUsuario = (usuario: Omit<Usuario, 'id'>) => {
+    const newId = Math.max(...usuarios.map(j => j.id), 0) + 1;
     const newUsuario: Usuario = {
       ...usuario,
+      id: newId,
     };
     const updatedUsuario = [...usuarios, newUsuario];
     setUsuarios(updatedUsuario);
-    saveGamesUser(updatedUsuario);
+    saveUserData(updatedUsuario);
   };
 
   const updateUsuario = (email: string, updatedUsuario: Partial<Usuario>) => {
-    setUsuarios(usuarios.map(u => u.email === email ? { ...u, ...updatedUsuario } : u));
+    const updatedUsuarios = usuarios.map(u => 
+      u.email === email ? { ...u, ...updatedUsuario } : u
+    );
+    setUsuarios(updatedUsuarios);
+    saveUserData(updatedUsuarios);
   };
 
   const deleteUsuario = (email: string) => {
-    setUsuarios(usuarios.filter(u => u.email !== email));
+    const updatedUsuarios = usuarios.filter(u => u.email !== email);
+    setUsuarios(updatedUsuarios);
+    saveUserData(updatedUsuarios);
   };
 
   const addJuego = (juego: Omit<Juego, 'id'>) => {
@@ -159,16 +169,6 @@ const deleteNoticia = (id: string) => {
   setNoticias(updatedNoticias);
   saveNoticiasData(updatedNoticias);
 };
-
-  // Simular carga de usuarios
-  useEffect(() => {
-    // En una app real, esto vendría de una API
-    setUsuarios([
-      { email: 'admin@example.com', name: 'Admin', role: 'admin' },
-      { email: 'user1@example.com', name: 'Usuario 1', role: 'user' },
-      { email: 'user2@example.com', name: 'Usuario 2', role: 'user' },
-    ]);
-  }, []);
 
   return (
     <AdminContext.Provider value={{

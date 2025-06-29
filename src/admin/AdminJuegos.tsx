@@ -58,7 +58,7 @@ import AdminDashboard from '../pages/AdminDashboard';
                     />
                 </td>
                 <td>{juego.title}</td>
-                <td>${juego.price.toFixed(2)}</td>
+                <td>${juego.price}</td>
                 <td>{juego.oferta || 'No'}</td>
                 <td>
                     <Button 

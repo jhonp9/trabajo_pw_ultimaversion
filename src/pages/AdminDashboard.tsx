@@ -32,6 +32,7 @@ const AdminDashboard = ({ children }: AdminDashboardProps) => {
           <li><button onClick={() => navigate('/admin/ventas')}>Ventas</button></li>
           <li><button onClick={() => navigate('/admin/perfil')}>Mi Perfil</button></li>
         </ul>
+        <button className="btn btn-login w-100" onClick={() => {navigate('/');} }> Volver </button>
         <button className="btn btn-login w-100" onClick={() => {navigate('/login');} }> Cerrar sesion </button>
       </div>
       <div className="admin-content">

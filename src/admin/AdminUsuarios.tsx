@@ -5,7 +5,7 @@ import AdminDashboard from '../pages/AdminDashboard';
 
 const AdminUsuarios = () => {
   const { usuarios } = useAdmin();
-
+  console.log('Usuarios:', usuarios);
   return (
     <AdminDashboard>
       <div className="admin-usuarios mb-5">

@@ -1,6 +1,6 @@
 // types/usuarios.ts
 export interface Usuario {
-  id?: string;
+  id: number;
   email: string;
   name: string;
   role: 'admin' | 'user';
