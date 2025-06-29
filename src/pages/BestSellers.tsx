@@ -16,7 +16,7 @@ const BestSellers = () => {
         <div className="container">
           <h1 className="page-title">Juegos Más Vendidos</h1>
           <div className="sales-info mb-4">
-            <p>Los juegos más populares según nuestras ventas</p>
+            <p style={{ color: '#00ff88' }}>Los juegos más populares según nuestras ventas</p>
           </div>
           <JuegosLista juegos={bestSellers} />
         </div>

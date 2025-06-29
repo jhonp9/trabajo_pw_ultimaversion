@@ -25,7 +25,7 @@ export const gamesData: Juego[] = [
         comment: "bueno",
         date: "mayo"
   }]
-},
+  },
   {
     id: 2,
     title: "Cyberpunk 2077",
@@ -49,7 +49,7 @@ export const gamesData: Juego[] = [
         rating: 4,
         comment: "bueno",
         date: "mayo"
-  }]
+    }]
   },
   {
     id: 3,
@@ -76,8 +76,8 @@ export const gamesData: Juego[] = [
         date: "Noviembre 2023"
       }
     ]
-},
-{
+  },
+  {
     id: 4,
     title: "Elden Ring",
     description: "Juego de rol de acción en un mundo abierto masivo creado por Hidetaka Miyazaki y George R.R. Martin.",

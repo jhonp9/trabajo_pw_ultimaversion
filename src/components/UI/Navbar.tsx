@@ -75,6 +75,7 @@ const Navbar = () => {
                         <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/categorias'); }}>Categorias</a></li>
                         <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/juegos-mas-vendidos'); }}>Juegos mas vendidos</a></li>
                         <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/mejores-valorados'); }}>Mejores valorados</a></li>
+                        <li className="nav-item"><a className="nav-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/noticias'); }}>Noticias</a></li>
                     </ul>
                     <div className="d-flex">
                         <div className="search-container position-relative" ref={searchRef}>
@@ -117,58 +118,70 @@ const Navbar = () => {
                         {user ? (
                             <div className="user-dropdown position-relative">
                                 <button 
-                                    className="user-avatar d-flex align-items-center" 
-                                    onClick={() => setShowDropdown(!showDropdown)}
+                                className="user-avatar d-flex align-items-center" 
+                                onClick={() => setShowDropdown(!showDropdown)}
                                 >
-                                    <div className="avatar-circle me-2">
-                                        <img 
-                                            src="/default-avatar.png" 
-                                            alt={user.name} 
-                                            className="avatar-img"
-                                        />
-                                    </div>
-                                    <span className="user-name">{user.name}</span>
+                                <div className="avatar-circle me-2">
+                                    <img 
+                                    src="/default-avatar.png" 
+                                    alt={user.name} 
+                                    className="avatar-img"
+                                    />
+                                </div>
+                                <span className="user-name">{user.name}</span>
                                 </button>
                                 
                                 {showDropdown && (
-                                    <div className="dropdown-menu show">
-                                        <button 
-                                            className="dropdown-item" 
-                                            onClick={() => {
-                                                navigate('/perfil');
-                                                setShowDropdown(false);
-                                            }}
-                                        >
-                                            Mi Perfil
-                                        </button>
-                                        <button 
-                                            className="dropdown-item" 
-                                            onClick={() => {
-                                                navigate('/mis-juegos');
-                                                setShowDropdown(false);
-                                            }}
-                                        >
-                                            Mis Juegos
-                                        </button>
-                                        <div className="dropdown-divider"></div>
-                                        <button 
-                                            className="dropdown-item" 
-                                            onClick={() => {
-                                                logout();
-                                                navigate('/');
-                                                setShowDropdown(false);
-                                            }}
-                                        >
-                                            Cerrar Sesión
-                                        </button>
-                                    </div>
+                                <div className="dropdown-menu show">
+                                    {user.role === 'admin' && (
+                                    <button 
+                                        className="dropdown-item" 
+                                        onClick={() => {
+                                        navigate('/admin/juegos');
+                                        setShowDropdown(false);
+                                        }}
+                                    >
+                                        Panel Admin
+                                    </button>
+                                    )}
+                                    <button 
+                                    className="dropdown-item" 
+                                    onClick={() => {
+                                        navigate('/perfil');
+                                        setShowDropdown(false);
+                                    }}
+                                    >
+                                    Mi Perfil
+                                    </button>
+                                    <button 
+                                    className="dropdown-item" 
+                                    onClick={() => {
+                                        navigate('/mis-juegos');
+                                        setShowDropdown(false);
+                                    }}
+                                    >
+                                    Mis Juegos
+                                    </button>
+                                    <div className="dropdown-divider"></div>
+                                    <button 
+                                    className="dropdown-item" 
+                                    onClick={() => {
+                                        logout();
+                                        navigate('/');
+                                        setShowDropdown(false);
+                                    }}
+                                    >
+                                    Cerrar Sesión
+                                    </button>
+                                </div>
                                 )}
                             </div>
-                        ) : (
+                            ) : (
                             <Button variant="primary" onClick={() => navigate('/login')}>
                                 Iniciar Sesión
                             </Button>
-                        )}
+                            )
+                        }
                     </div>
                 </div>
             </div>

@@ -2,13 +2,36 @@ import { useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../components/Auth/AuthLayout';
 import AuthInput from '../components/Auth/AuthInput';
 import { AuthButton } from '../components/Auth/AuthButton';
+import { useAuth } from '../components/Auth/AuthContext';
+import { useState } from 'react';
 
 export const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de registro
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const newUser = {
+      name: `${formData.get('firstName')} ${formData.get('lastName')}`,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      role: 'user' as const,
+    };
+    
+    if (formData.get('password') !== formData.get('confirmPassword')) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+    
+    if (register(newUser)) {
+      navigate('/');
+    } else {
+      setError('El usuario ya existe');
+    }
   };
 
   return (

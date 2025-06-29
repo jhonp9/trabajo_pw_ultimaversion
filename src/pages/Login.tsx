@@ -10,23 +10,34 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { user } = useAuth();
+  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); // Limpiar errores previos
   };
 
-  const validar =(email: string, password: string) => {
+  const validar = (email: string, password: string) => {
     if (!email || !password) {
-      setError('Por favor ingresa correo y contraseña');
-      return;
+      setError('Por favor, completa todos los campos.');
+      return false;
     }
-
-    if (login(email, password)) {
-      navigate('/');
+    
+    const success = login(email, password);
+    if (!success) {
+      setError('Credenciales inválidas');
+      return false;
+    }
+    
+    // Redirigir según el rol
+    if (user?.role === 'admin') {
+      navigate('/admin/juegos');
     } else {
-      setError('Correo o contraseña incorrectos');
+      navigate('/');
     }
+    
+    return true;
   }
 
   return (
@@ -78,7 +89,7 @@ export const Login = () => {
       <button 
         type="submit" 
         className="btn btn-login w-100"
-        onClick={() => validar(email, password)}
+        onClick={() => validar(email, password) ? login(email, password) : setError('Credenciales inválidas')}
       >
         Ingresar
       </button>
