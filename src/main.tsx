@@ -16,9 +16,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <AdminProvider> {/* Envuelve con AdminProvider */}
-        <ErrorBoundary>
           <App />
-        </ErrorBoundary>
       </AdminProvider>
     </AuthProvider>
   </React.StrictMode>
