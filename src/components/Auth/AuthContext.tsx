@@ -1,59 +1,100 @@
 // AuthContext.tsx
-import { createContext, useContext, useState, type ReactNode } from 'react';
-import { usersData } from '../../data/usersData';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Usuario } from '../../types/usuarios';
+import { apiClient } from '../../api/client';
 
 interface AuthContextType {
   user: Usuario | null;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateProfile: (newData: Partial<Usuario>) => void;
-  register: (newUser: Omit<Usuario, 'id'>) => boolean;
+  updateProfile: (newData: Partial<Usuario>) => Promise<boolean>;
+  register: (newUser: Omit<Usuario, 'id'>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
-  const [users, setUsers] = useState<Usuario[]>(usersData);
 
-  const login = (email: string, password: string) => {
-    const foundUser = users.find(u => u.email === email && u.password === password);
-    if (foundUser) {
-      setUser(foundUser);
+  const login = async (email: string, password: string) => {
+    try {
+      const data = await apiClient('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      localStorage.setItem('authToken', data.token);
+      setUser(data.user);
       return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
+    localStorage.removeItem('authToken');
     setUser(null);
   };
 
-  const updateProfile = (newData: Partial<Usuario>) => {
-    if (user) {
-      const updatedUser = { ...user, ...newData };
-      setUser(updatedUser);
+  const updateProfile = async (newData: Partial<Usuario>) => {
+    if (!user) return false;
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.email}` // Simulación básica
+        },
+        body: JSON.stringify(newData),
+      });
       
-      // Actualizar en la lista de usuarios
-      setUsers(users.map(u => u.email === user.email ? updatedUser : u));
+      if (!response.ok) {
+        return false;
+      }
+      
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      return true;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      return false;
     }
   };
 
-  const register = (newUser: Omit<Usuario, 'id'>) => {
-    if (users.some(u => u.email === newUser.email)) {
-      return false; // Usuario ya existe
+  const register = async (newUser: Omit<Usuario, 'id'>) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
+      });
+      
+      if (!response.ok) {
+        return false;
+      }
+      
+      const createdUser = await response.json();
+      setUser(createdUser);
+      return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
     }
-    
-    const userToAdd: Usuario = {
-      ...newUser,
-      role: 'user' // Por defecto todos son usuarios normales
-    };
-    
-    setUsers([...users, userToAdd]);
-    setUser(userToAdd);
-    return true;
   };
+
+  useEffect(() => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    // Verificar token y cargar usuario
+    apiClient('/api/auth/me')
+      .then(user => setUser(user))
+      .catch(() => logout());
+  }
+}, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateProfile, register }}>

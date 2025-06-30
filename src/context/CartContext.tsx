@@ -1,5 +1,6 @@
-import { createContext, useState, useContext, type ReactNode, useCallback } from 'react';
-import { gamesData } from '../data/gamesData';
+// CartContext.tsx
+import { createContext, useContext, useState, type ReactNode, useCallback, useEffect } from 'react';
+import { useAuth } from '../components/Auth/AuthContext';
 
 interface CartItem {
   id: number;
@@ -22,17 +23,13 @@ interface CartContextType {
   setShowConfirm: (show: boolean) => void;
   notification: { show: boolean; message: string };
   showNotification: (message: string) => void;
-  checkout: () => void;
+  checkout: (userId: number) => Promise<boolean>;
   purchasedGames: number[];
-  addPurchasedGames: (gameIds: number[]) => void;
-  updateGameSales: (gameId: number, quantity: number) => void;
-  updateGameRating: (gameId: number, newRating: number) => void;
-  getGameSales: (gameId: number) => number;
   showPayment: boolean;
   setShowPayment: (show: boolean) => void;
   showReceipt: boolean;
   setShowReceipt: (show: boolean) => void;
-  processPayment: () => void;
+  processPayment: (userId: number) => Promise<boolean>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -45,39 +42,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [purchasedGames, setPurchasedGames] = useState<number[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const { user } = useAuth();
 
   // Calcula el total y la cantidad de items
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const itemsCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
-  // Actualizar ventas de un juego
-  const updateGameSales = useCallback((gameId: number, quantity: number) => {
-    const gameIndex = gamesData.findIndex(game => game.id === gameId);
-    if (gameIndex !== -1) {
-      gamesData[gameIndex].sales += quantity;
-      // Guardar en localStorage para persistencia
-      localStorage.setItem('gamesData', JSON.stringify(gamesData));
+  // Cargar juegos comprados del usuario al iniciar
+  useEffect(() => {
+    if (user) {
+      fetch(`http://localhost:5000/api/auth/user/${user.email}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.purchasedGames) {
+            setPurchasedGames(data.purchasedGames);
+          }
+        })
+        .catch(error => console.error('Error loading purchased games:', error));
     }
-  }, []);
-
-  // Actualizar rating de un juego
-  const updateGameRating = useCallback((gameId: number, newRating: number) => {
-    const gameIndex = gamesData.findIndex(game => game.id === gameId);
-    if (gameIndex !== -1) {
-      // Calcular nuevo rating promedio
-      const game = gamesData[gameIndex];
-      const totalRatings = game.reviews.reduce((sum, review) => sum + review.rating, 0);
-      const averageRating = totalRatings / game.reviews.length;
-      gamesData[gameIndex].rating = parseFloat(averageRating.toFixed(1));
-      localStorage.setItem('gamesData', JSON.stringify(gamesData));
-    }
-  }, []);
-
-  // Obtener ventas de un juego
-  const getGameSales = useCallback((gameId: number) => {
-    const game = gamesData.find(game => game.id === gameId);
-    return game ? game.sales : 0;
-  }, []);
+  }, [user]);
 
   // Añadir al carrito
   const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
@@ -92,10 +75,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
     showNotification(`${item.title} añadido al carrito`);
   }, []);
-
-  const addPurchasedGames = (gameIds: number[]) => {
-    setPurchasedGames(prev => [...prev, ...gameIds]);
-  };
 
   // Eliminar un item del carrito
   const removeFromCart = useCallback((id: number) => {
@@ -124,20 +103,51 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Procesar compra
-  const checkout = useCallback(() => {
-    // Actualizar ventas para cada juego en el carrito
-    cartItems.forEach(item => {
-      updateGameSales(item.id, item.quantity);
-    });
-    
-    // Añadir juegos comprados
-    const purchasedIds = cartItems.map(item => item.id);
-    addPurchasedGames(purchasedIds);
-    
-    setCartItems([]);
-    setShowCart(false);
-    showNotification('Compra realizada con éxito!');
-  }, [cartItems, updateGameSales]);
+  const checkout = useCallback(async (userId: number): Promise<boolean> => {
+    try {
+      // Procesar cada juego en el carrito
+      const purchasePromises = cartItems.map(item => 
+        fetch(`http://localhost:5000/api/games/${item.id}/purchase`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.email}`
+          },
+          body: JSON.stringify({
+            userId,
+            quantity: item.quantity
+          })
+        })
+      );
+
+      await Promise.all(purchasePromises);
+      
+      // Actualizar lista de juegos comprados
+      const purchasedIds = cartItems.map(item => item.id);
+      setPurchasedGames(prev => [...prev, ...purchasedIds]);
+      
+      // Vaciar carrito
+      setCartItems([]);
+      setShowCart(false);
+      showNotification('Compra realizada con éxito!');
+      
+      return true;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      showNotification('Error al procesar la compra');
+      return false;
+    }
+  }, [cartItems, user]);
+
+  // Procesar pago (similar a checkout pero con más pasos)
+  const processPayment = useCallback(async (userId: number): Promise<boolean> => {
+    const success = await checkout(userId);
+    if (success) {
+      setShowPayment(false);
+      setShowReceipt(true);
+    }
+    return success;
+  }, [checkout]);
 
   // Mostrar notificación
   const showNotification = useCallback((message: string) => {
@@ -147,45 +157,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
-  // Función para procesar el pago
-  const processPayment = useCallback(() => {
-    // Aquí iría la lógica real de pago
-    // Por ahora simulamos el proceso
-    
-    // 1. Actualizar ventas
-    cartItems.forEach(item => {
-      updateGameSales(item.id, item.quantity);
-    });
-    
-    // 2. Añadir a juegos comprados
-    const purchasedIds = cartItems.map(item => item.id);
-    addPurchasedGames(purchasedIds);
-    
-    // 3. Vaciar carrito
-    setCartItems([]);
-    setShowCart(false);
-    setShowPayment(false);
-    
-    // 4. Mostrar recibo
-    setShowReceipt(true);
-    
-    showNotification('Compra realizada con éxito!');
-  }, [cartItems, updateGameSales]);
-
-  // Cargar datos guardados al iniciar
-  useState(() => {
-    const savedGamesData = localStorage.getItem('gamesData');
-    if (savedGamesData) {
-      const parsedData = JSON.parse(savedGamesData);
-      gamesData.forEach((game, index) => {
-        if (parsedData[index]) {
-          game.sales = parsedData[index].sales;
-          game.rating = parsedData[index].rating;
-        }
-      });
-    }
-  });
 
   return (
     <CartContext.Provider value={{
@@ -204,10 +175,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       notification,
       showNotification,
       purchasedGames,
-      addPurchasedGames,
-      updateGameSales,
-      updateGameRating,
-      getGameSales,
       showPayment,
       setShowPayment,
       showReceipt,

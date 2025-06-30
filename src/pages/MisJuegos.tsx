@@ -1,15 +1,26 @@
 import { useAuth } from '../components/Auth/AuthContext';
-import { gamesData } from '../data/gamesData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import type { Juego } from '../types/juego';
+import { useState } from 'react';
+
+const URL = "http://localhost:5000" // URL Base
 
 const MyGamesPage = () => {
     const { user } = useAuth();
     const { purchasedGames } = useCart(); // Asume que has extendido tu CartContext para manejar juegos comprados
     const navigate = useNavigate();
 
+    const [ lista, setLista ] = useState<Juego[]>([])
+      
+      const httpObtenerTODOs = async () => {
+            const response = await fetch(`${URL}/`)
+            const data = await response.json()
+            setLista(data)
+        }
+
     // Filtra los juegos comprados
-    const myGames = gamesData.filter(game => 
+    const myGames = lista.filter(game => 
         purchasedGames.includes(game.id) || 
         (user?.email === 'admin' && game.id <= 3) // Ejemplo: admin ve algunos juegos por defecto
     );

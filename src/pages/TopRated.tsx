@@ -1,11 +1,19 @@
+import { useState } from 'react';
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
 import JuegosLista from '../components/Juegos/JuegosLista';
 import Navbar from '../components/UI/Navbar';
-import { gamesData } from '../data/gamesData';
+import type { Juego } from '../types/juego';
 
 const TopRated = () => {
+  const [ lista, setLista ] = useState<Juego[]>([])
+            
+  const httpObtenerTODOs = async () => {
+        const response = await fetch(`${URL}/`)
+        const data = await response.json()
+        setLista(data)
+    }
   // Ordenar por rating (de mayor a menor)
-  const topRated = [...gamesData]
+  const topRated = [...lista]
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 12); // Mostrar los 12 mejor valorados
 
@@ -18,7 +26,7 @@ const TopRated = () => {
           <div className="rating-criteria">
             <p>Juegos con mejor puntuación por nuestros usuarios</p>
             <div className="rating-info">
-              <small>Basado en {gamesData.reduce((sum, game) => sum + game.reviews.length, 0)} reseñas</small>
+              <small>Basado en {lista.reduce((sum, game) => sum + game.reviews.length, 0)} reseñas</small>
             </div>
           </div>
           <JuegosLista juegos={topRated} />

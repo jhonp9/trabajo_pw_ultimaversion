@@ -27,6 +27,8 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
     },
     trailerUrl: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (mode === 'edit' && juego) {
@@ -121,14 +123,24 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === 'add') {
-      addJuego(formData as Omit<Juego, 'id'>);
-    } else if (mode === 'edit' && juego) {
-      updateJuego(juego.id, formData);
+    setLoading(true);
+    setError('');
+    
+    try {
+      if (mode === 'add') {
+        await addJuego(formData as Omit<Juego, 'id'>);
+      } else if (mode === 'edit' && juego) {
+        await updateJuego(juego.id, formData);
+      }
+      onHide();
+    } catch (err) {
+      setError('Error al guardar el juego');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    onHide();
   };
 
   return (
@@ -137,6 +149,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
         <Modal.Title>{mode === 'add' ? 'Agregar Juego' : 'Editar Juego'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {error && <div className="alert alert-danger">{error}</div>}
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Label>Título</Form.Label>
@@ -308,11 +321,11 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Row>
 
           <div className="d-flex justify-content-end mt-4">
-            <Button variant="secondary" onClick={onHide} className="me-2">
+            <Button variant="secondary" onClick={onHide} className="me-2" disabled={loading}>
               Cancelar
             </Button>
-            <Button variant="primary" type="submit">
-              {mode === 'add' ? 'Agregar Juego' : 'Guardar Cambios'}
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? 'Guardando...' : mode === 'add' ? 'Agregar Juego' : 'Guardar Cambios'}
             </Button>
           </div>
         </Form>

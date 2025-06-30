@@ -10,7 +10,7 @@ export const Register = () => {
   const { register } = useAuth();
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
@@ -27,7 +27,7 @@ export const Register = () => {
       return;
     }
     
-    if (register(newUser)) {
+    if (await register(newUser)) {
       navigate('/');
     } else {
       setError('El usuario ya existe');

@@ -1,13 +1,22 @@
 import { useState } from 'react';
 import JuegosLista from '../components/Juegos/JuegosLista';
 import FilterSidebar from '../components/Filters/FilterSidebar';
-import { gamesData } from '../data/gamesData';
-
 import type { FilterState } from '../types/filter';
 import Navbar from '../components/UI/Navbar';
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
+import type { Juego } from '../types/juego';
+
+const URL = "http://localhost:5000" // URL Base
 
 const GameCatalog = () => {
+
+  const [ lista, setLista ] = useState<Juego[]>([])
+      
+      const httpObtenerTODOs = async () => {
+            const response = await fetch(`${URL}/`)
+            const data = await response.json()
+            setLista(data)
+        }
 
   const [filters, setFilters] = useState<FilterState>({
     priceRange: [0, 100],
@@ -17,7 +26,7 @@ const GameCatalog = () => {
     oferta: ''
   });
 
-  const filteredGames = gamesData.filter(game => {
+  const filteredGames = lista.filter(game => {
     return (
       game.price >= filters.priceRange[0] &&
       game.price <= filters.priceRange[1] &&

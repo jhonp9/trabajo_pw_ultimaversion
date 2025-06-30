@@ -19,6 +19,7 @@ import AdminUsuarios from './admin/AdminUsuarios';
 import AdminVentas from './admin/AdminVentas';
 import { AdminJuegos } from './admin/AdminJuegos';
 import AdminPerfil from './pages/AdminPerfil';
+import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 function App() {
   return (
     <CartProvider>
@@ -38,7 +39,14 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/busqueda" element={<SearchPage />} />
           <Route path="/noticias" element={<NoticiasPage />} />
-          <Route path="/admin/juegos" element={<AdminJuegos />} />
+          <Route 
+            path="/admin/juegos" 
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminJuegos />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/admin/noticias" element={<AdminNoticias />} />
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
           <Route path="/admin/ventas" element={<AdminVentas />} />

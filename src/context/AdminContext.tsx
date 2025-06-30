@@ -1,83 +1,213 @@
-import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
+// AdminContext.tsx
+import { createContext, useContext, type ReactNode } from 'react';
 import type { Juego } from '../types/juego';
 import type { Noticia } from '../types/noticia';
-import { gamesData } from '../data/gamesData';
-import { noticiasData } from '../data/noticiasData';
 import type { Usuario } from '../types/usuarios';
-import { usersData } from '../data/usersData';
-
-// AdminContext.tsx
-const loadGamesData = () => {
-  const savedData = localStorage.getItem('gamesData');
-  return savedData ? JSON.parse(savedData) : gamesData;
-};
-const loadUsuariosData = () => {
-  const savedData = localStorage.getItem('usersData');
-  return savedData ? JSON.parse(savedData) : usersData;
-};
-
-// Función para cargar noticias guardadas
-const loadNoticiasData = () => {
-  const savedData = localStorage.getItem('noticiasData');
-  return savedData ? JSON.parse(savedData) : noticiasData;
-};
-
-// Función para guardar datos
-const saveGamesData = (data: any) => {
-  localStorage.setItem('gamesData', JSON.stringify(data));
-};
-
-const saveUserData = (data: any) => {
-  localStorage.setItem('usersData', JSON.stringify(data));
-};
-
-const saveNoticiasData = (data: any) => {
-  localStorage.setItem('noticiasData', JSON.stringify(data));
-};
-
+import { useAuth } from '../components/Auth/AuthContext';
 
 interface AdminContextType {
   juegos: Juego[];
-  addJuego: (juego: Omit<Juego, 'id'>) => void;
-  updateJuego: (id: number, updatedJuego: Partial<Juego>) => void;
-  deleteJuego: (id: number) => void;
+  addJuego: (juego: Omit<Juego, 'id'>) => Promise<Juego | null>;
+  updateJuego: (id: number, updatedJuego: Partial<Juego>) => Promise<Juego | null>;
+  deleteJuego: (id: number) => Promise<boolean>;
   noticias: Noticia[];
-  addNoticia: (noticia: Omit<Noticia, 'id' | 'fecha'>) => void;
-  updateNoticia: (id: string, updatedNoticia: Partial<Noticia>) => void;
-  deleteNoticia: (id: string) => void;
+  addNoticia: (noticia: Omit<Noticia, 'id' | 'fecha'>) => Promise<Noticia | null>;
+  updateNoticia: (id: string, updatedNoticia: Partial<Noticia>) => Promise<Noticia | null>;
+  deleteNoticia: (id: string) => Promise<boolean>;
   ventasPorMes: { mes: string; total: number }[];
   usuarios: Usuario[];
-  addUsuario: (usuario: Omit<Usuario, 'id'>) => void;
-  updateUsuario: (email: string, updatedUsuario: Partial<Usuario>) => void;
-  deleteUsuario: (email: string) => void;
-  loadInitialData: () => void;
-  resetData: () => void;
+  addUsuario: (usuario: Omit<Usuario, 'id'>) => Promise<Usuario | null>;
+  updateUsuario: (id: number, updatedUsuario: Partial<Usuario>) => Promise<Usuario | null>;
+  deleteUsuario: (id: number) => Promise<boolean>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const [juegos, setJuegos] = useState<Juego[]>(loadGamesData());
-  const [noticias, setNoticias] = useState<Noticia[]>(loadNoticiasData());
-  const [usuarios, setUsuarios] = useState<Usuario[]>(loadUsuariosData());
-  
-  // Carga inicial de datos
-  useEffect(() => {
-    setJuegos(loadGamesData());
-    setNoticias(loadNoticiasData());
-    setUsuarios(loadUsuariosData());
-  }, []);
+  const { user } = useAuth();
 
-  const resetData = () => {
-  localStorage.removeItem('gamesData');
-  localStorage.removeItem('usersData');
-  localStorage.removeItem('noticiasData');
-  setJuegos(gamesData);
-  setUsuarios(usersData);
-  setNoticias(noticiasData);
-};
+  const fetchJuegos = async (): Promise<Juego[]> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/games');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      return [];
+    }
+  };
 
-  // Simular datos de ventas por mes
+  const addJuego = async (juego: Omit<Juego, 'id'>): Promise<Juego | null> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/games', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(juego),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding game:', error);
+      return null;
+    }
+  };
+
+  const updateJuego = async (id: number, updatedJuego: Partial<Juego>): Promise<Juego | null> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/games/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(updatedJuego),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating game:', error);
+      return null;
+    }
+  };
+
+  const deleteJuego = async (id: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/games/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user?.email}`
+        },
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      return false;
+    }
+  };
+
+  const fetchNoticias = async (): Promise<Noticia[]> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/news');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      return [];
+    }
+  };
+
+  const addNoticia = async (noticia: Omit<Noticia, 'id' | 'fecha'>): Promise<Noticia | null> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/news', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(noticia),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding news:', error);
+      return null;
+    }
+  };
+
+  const updateNoticia = async (id: string, updatedNoticia: Partial<Noticia>): Promise<Noticia | null> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/news/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(updatedNoticia),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating news:', error);
+      return null;
+    }
+  };
+
+  const deleteNoticia = async (id: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/news/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user?.email}`
+        },
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Error deleting news:', error);
+      return false;
+    }
+  };
+
+  const fetchUsuarios = async (): Promise<Usuario[]> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users', {
+        headers: {
+          'Authorization': `Bearer ${user?.email}`
+        },
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+  };
+
+  const addUsuario = async (usuario: Omit<Usuario, 'id'>): Promise<Usuario | null> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(usuario),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding user:', error);
+      return null;
+    }
+  };
+
+  const updateUsuario = async (id: number, updatedUsuario: Partial<Usuario>): Promise<Usuario | null> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.email}`
+        },
+        body: JSON.stringify(updatedUsuario),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating usuario:', error);
+      return null;
+    }
+  };
+  // AdminContext.tsx (continuación)
+  const deleteUsuario = async (id: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user?.email}`
+        },
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  };
+
+  // Datos simulados para ventas por mes (en un caso real, esto vendría del backend)
   const ventasPorMes = [
     { mes: 'Enero', total: 12000 },
     { mes: 'Febrero', total: 18000 },
@@ -87,107 +217,24 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     { mes: 'Junio', total: 22000 },
   ];
 
-  const loadInitialData = () => {
-    setJuegos(loadGamesData());
-    setNoticias(loadNoticiasData());
-    setUsuarios(loadUsuariosData());
-  };
-
-  const addUsuario = (usuario: Omit<Usuario, 'id'>) => {
-    const newId = Math.max(...usuarios.map(j => j.id), 0) + 1;
-    const newUsuario: Usuario = {
-      ...usuario,
-      id: newId,
-    };
-    const updatedUsuario = [...usuarios, newUsuario];
-    setUsuarios(updatedUsuario);
-    saveUserData(updatedUsuario);
-  };
-
-  const updateUsuario = (email: string, updatedUsuario: Partial<Usuario>) => {
-    const updatedUsuarios = usuarios.map(u => 
-      u.email === email ? { ...u, ...updatedUsuario } : u
-    );
-    setUsuarios(updatedUsuarios);
-    saveUserData(updatedUsuarios);
-  };
-
-  const deleteUsuario = (email: string) => {
-    const updatedUsuarios = usuarios.filter(u => u.email !== email);
-    setUsuarios(updatedUsuarios);
-    saveUserData(updatedUsuarios);
-  };
-
-  const addJuego = (juego: Omit<Juego, 'id'>) => {
-    const newId = Math.max(...juegos.map(j => j.id), 0) + 1;
-    const newJuego: Juego = {
-      ...juego,
-      id: newId,
-      reviews: [],
-      sales: 0
-    };
-    const updatedJuegos = [...juegos, newJuego];
-    setJuegos(updatedJuegos);
-    saveGamesData(updatedJuegos);
-  };
-
-  const updateJuego = (id: number, updatedJuego: Partial<Juego>) => {
-    const updatedJuegos = juegos.map(juego => 
-      juego.id === id ? { ...juego, ...updatedJuego } : juego
-    );
-    setJuegos(updatedJuegos);
-    saveGamesData(updatedJuegos);
-  };
-
-  const deleteJuego = (id: number) => {
-    const updatedJuegos = juegos.filter(juego => juego.id !== id);
-    setJuegos(updatedJuegos);
-    saveGamesData(updatedJuegos);
-  };
-
-  const addNoticia = (noticia: Omit<Noticia, 'id' | 'fecha'>) => {
-  const newNoticia: Noticia = {
-    ...noticia,
-    id: Date.now().toString(),
-    fecha: new Date().toLocaleDateString()
-  };
-  const updatedNoticias = [...noticias, newNoticia];
-  setNoticias(updatedNoticias);
-  saveNoticiasData(updatedNoticias);
-};
-
-const updateNoticia = (id: string, updatedNoticia: Partial<Noticia>) => {
-  const updatedNoticias = noticias.map(noticia => 
-    noticia.id === id ? { ...noticia, ...updatedNoticia } : noticia
-  );
-  setNoticias(updatedNoticias);
-  saveNoticiasData(updatedNoticias);
-};
-
-const deleteNoticia = (id: string) => {
-  const updatedNoticias = noticias.filter(noticia => noticia.id !== id);
-  setNoticias(updatedNoticias);
-  saveNoticiasData(updatedNoticias);
-};
-
   return (
-    <AdminContext.Provider value={{
-      juegos,
-      addJuego,
-      updateJuego,
-      deleteJuego,
-      noticias,
-      addNoticia,
-      updateNoticia,
-      deleteNoticia,
-      ventasPorMes,
-      usuarios,
-      loadInitialData,
-      resetData,
-      addUsuario,
-      updateUsuario,
-      deleteUsuario
-    }}>
+    <AdminContext.Provider
+      value={{
+        juegos: [], // Se cargarán dinámicamente
+        addJuego,
+        updateJuego,
+        deleteJuego,
+        noticias: [], // Se cargarán dinámicamente
+        addNoticia,
+        updateNoticia,
+        deleteNoticia,
+        ventasPorMes,
+        usuarios: [], // Se cargarán dinámicamente
+        addUsuario,
+        updateUsuario,
+        deleteUsuario,
+      }}
+    >
       {children}
     </AdminContext.Provider>
   );

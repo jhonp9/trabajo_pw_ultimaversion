@@ -164,7 +164,11 @@ const CarritoSidebar = () => {
       {showPayment && (
         <Confirmacion 
           message="Ingresa los datos de tu tarjeta"
-          onConfirm={processPayment}
+          onConfirm={() => {
+            if (user?.id !== undefined) {
+              processPayment(user.id);
+            }
+          }}
           onCancel={() => setShowPayment(false)}
           type="payment"
         />

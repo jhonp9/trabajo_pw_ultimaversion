@@ -4,8 +4,9 @@ import { Button } from "react-bootstrap";
 import { useAuth } from '../Auth/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import type { Juego } from "../../types/juego";
-import { gamesData } from "../../data/gamesData";
 import SearchResults from "./SearchResults";
+
+const URL = "http://localhost:5000" // URL Base
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -17,6 +18,14 @@ const Navbar = () => {
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
+    const [ lista, setLista ] = useState<Juego[]>([])
+        
+        const httpObtenerTODOs = async () => {
+              const response = await fetch(`${URL}/`)
+              const data = await response.json()
+              setLista(data)
+          }
+
     // Manejar búsqueda en tiempo real
     useEffect(() => {
         if (searchQuery.trim() === '') {
@@ -24,7 +33,7 @@ const Navbar = () => {
             return;
         }
 
-        const results = gamesData.filter(juego =>
+        const results = lista.filter(juego =>
             juego.title.toLowerCase().includes(searchQuery.toLowerCase())
         ).slice(0, 5); // Mostrar máximo 5 resultados
 

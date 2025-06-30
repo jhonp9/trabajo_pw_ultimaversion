@@ -1,15 +1,24 @@
 // pages/SearchPage.tsx
 import { useLocation } from 'react-router-dom';
-import { gamesData } from '../data/gamesData';
 import JuegosLista from '../components/Juegos/JuegosLista';
 import Navbar from '../components/UI/Navbar';
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
+import type { Juego } from '../types/juego';
+import { useState } from 'react';
 
 const SearchPage = () => {
     const location = useLocation();
+
+    const [ lista, setLista ] = useState<Juego[]>([])
+          
+    const httpObtenerTODOs = async () => {
+        const response = await fetch(`${URL}/`)
+        const data = await response.json()
+        setLista(data)
+    }
     const query = new URLSearchParams(location.search).get('q') || '';
     
-    const filteredGames = gamesData.filter(juego =>
+    const filteredGames = lista.filter(juego =>
         juego.title.toLowerCase().includes(query.toLowerCase())
     );
 

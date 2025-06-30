@@ -1,5 +1,5 @@
-// components/admin/AdminJuegos.tsx
-import { useState } from 'react';
+// AdminJuegos.tsx
+import { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import JuegoModal from '../components/Juegos/JuegosModal';
 import JuegoFormModal from './JuegoFormModal';
@@ -7,14 +7,20 @@ import { Button, Table } from 'react-bootstrap';
 import type { Juego } from '../types/juego';
 import AdminDashboard from '../pages/AdminDashboard';
 
- export const AdminJuegos = () => {
-  const { juegos, deleteJuego } = useAdmin();
+export const AdminJuegos = () => {
+  const { juegos, addJuego, updateJuego, deleteJuego } = useAdmin();
   const [selectedJuego, setSelectedJuego] = useState<Juego | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
+  const [loading, setLoading] = useState(true);
 
-  const handleEdit = (juego:Juego) => {
+  useEffect(() => {
+    // En un caso real, los juegos se cargarían a través del AdminContext
+    setLoading(false);
+  }, []);
+
+  const handleEdit = (juego: Juego) => {
     setSelectedJuego(juego);
     setFormMode('edit');
     setShowFormModal(true);
@@ -26,88 +32,99 @@ import AdminDashboard from '../pages/AdminDashboard';
     setShowFormModal(true);
   };
 
+  const handleDelete = async (id: number) => {
+    if (window.confirm('¿Estás seguro de eliminar este juego?')) {
+      const success = await deleteJuego(id);
+      if (!success) {
+        alert('Error al eliminar el juego');
+      }
+    }
+  };
+
+  if (loading) return <div>Cargando...</div>;
+
   return (
     <AdminDashboard>
-        <div className="admin-juegos mb-5">
+      <div className="admin-juegos mb-5">
         <h2 className="mb-4">Gestión de Juegos</h2>
         
         <Button variant="primary" onClick={handleAdd} className="mb-3">
-            Agregar Nuevo Juego
+          Agregar Nuevo Juego
         </Button>
         
         <Table striped bordered hover responsive>
-            <thead>
+          <thead>
             <tr>
-                <th>ID</th>
-                <th>Imagen</th>
-                <th>Título</th>
-                <th>Precio</th>
-                <th>Oferta</th>
-                <th>Acciones</th>
+              <th>ID</th>
+              <th>Imagen</th>
+              <th>Título</th>
+              <th>Precio</th>
+              <th>Oferta</th>
+              <th>Acciones</th>
             </tr>
-            </thead>
-            <tbody>
+          </thead>
+          <tbody>
             {juegos.map(juego => (
-                <tr key={juego.id}>
+              <tr key={juego.id}>
                 <td>{juego.id}</td>
                 <td>
-                    <img 
+                  <img 
                     src={juego.images[0]} 
                     alt={juego.title} 
                     style={{ width: '50px', height: 'auto' }}
-                    />
+                  />
                 </td>
                 <td>{juego.title}</td>
                 <td>${juego.price}</td>
                 <td>{juego.oferta || 'No'}</td>
                 <td>
-                    <Button 
+                  <Button 
                     variant="info" 
                     size="sm" 
                     onClick={() => {
-                        setSelectedJuego(juego);
-                        setShowModal(true);
+                      setSelectedJuego(juego);
+                      setShowModal(true);
                     }}
                     className="me-2"
-                    >
+                  >
                     Ver
-                    </Button>
-                    <Button 
+                  </Button>
+                  <Button 
                     variant="warning" 
                     size="sm" 
                     onClick={() => handleEdit(juego)}
                     className="me-2"
-                    >
+                  >
                     Editar
-                    </Button>
-                    <Button 
+                  </Button>
+                  <Button 
                     variant="danger" 
                     size="sm" 
-                    onClick={() => deleteJuego(juego.id)}
-                    >
+                    onClick={() => handleDelete(juego.id)}
+                  >
                     Eliminar
-                    </Button>
+                  </Button>
                 </td>
-                </tr>
+              </tr>
             ))}
-            </tbody>
+          </tbody>
         </Table>
 
         {selectedJuego && (
-            <JuegoModal 
+          <JuegoModal 
             show={showModal} 
             onHide={() => setShowModal(false)} 
             juego={selectedJuego} 
-            />
+          />
         )}
         
         <JuegoFormModal 
-            show={showFormModal} 
-            onHide={() => setShowFormModal(false)} 
-            juego={formMode === 'edit' ? selectedJuego : null}
-            mode={formMode}
+          show={showFormModal} 
+          onHide={() => setShowFormModal(false)} 
+          juego={formMode === 'edit' ? selectedJuego : null}
+          mode={formMode}
         />
-        </div>
+      </div>
     </AdminDashboard>
   );
 };
