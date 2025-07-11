@@ -18,27 +18,27 @@ export const Login = () => {
     setError(''); // Limpiar errores previos
   };
 
-  const validar = (email: string, password: string) => {
-    if (!email || !password) {
-      setError('Por favor, completa todos los campos.');
-      return false;
-    }
-    
-    const success = login(email, password);
-    if (!success) {
-      setError('Credenciales inválidas');
-      return false;
-    }
-    
-    // Redirigir según el rol
-    if (user?.role === 'admin') {
-      navigate('/admin/juegos');
-    } else {
-      navigate('/');
-    }
-    
-    return true;
+  const validar = async (email: string, password: string) => {
+  if (!email || !password) {
+    setError('Por favor, completa todos los campos.');
+    return false;
   }
+  
+  const success = await login(email, password); // Añade await aquí
+  if (!success) {
+    setError('Credenciales inválidas');
+    return false;
+  }
+  
+  // Redirigir según el rol
+  if (user?.role === 'admin') {
+    navigate('/admin/juegos');
+  } else {
+    navigate('/');
+  }
+  
+  return true;
+}
 
   return (
     <AuthLayout title="Iniciar Sesión">
@@ -89,7 +89,7 @@ export const Login = () => {
       <button 
         type="submit" 
         className="btn btn-login w-100"
-        onClick={() => validar(email, password) ? login(email, password) : setError('Credenciales inválidas')}
+        onClick={async () => await validar(email, password) ? login(email, password) : setError('Credenciales inválidas')}
       >
         Ingresar
       </button>

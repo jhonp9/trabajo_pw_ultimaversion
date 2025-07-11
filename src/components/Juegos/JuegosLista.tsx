@@ -2,14 +2,22 @@
 import { useState } from 'react';
 import JuegoModal from './JuegosModal';
 import type { Juego } from '../../types/juego';
+import { apiClient } from '../../api/client';
 
-interface JuegosListaProps {
-  juegos: Juego[];
-}
 
-const JuegosLista = ({ juegos }: JuegosListaProps) => {
+const JuegosLista = () => {
   const [selectedGame, setSelectedGame] = useState<Juego | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  const [ juegos, setLista ] = useState<Juego[]>([])
+  
+  const httpObtenerJuegos = async () => {
+        const data = await apiClient('/api/games/', {
+              method: 'GET',
+              credentials: 'include' // Para manejar cookies
+            });
+        setLista(data)
+    }
 
   // Verifica los juegos recibidos
   console.log('Juegos recibidos en JuegosLista:', juegos);

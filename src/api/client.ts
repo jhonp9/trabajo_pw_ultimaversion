@@ -1,5 +1,5 @@
 // For Vite: use import.meta.env; for CRA: use process.env (with proper setup)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 const TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
 
 export const apiClient = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
@@ -11,14 +11,12 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
     ...(options.headers as Record<string, string>),
   };
 
-  // En tu apiClient.ts
-  // El manejo de expiración de token se mueve dentro del catch más abajo
-
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
       signal: controller.signal,
+      credentials: 'include' // Importante para cookies
     });
 
     clearTimeout(timeoutId);
@@ -26,14 +24,16 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
     if (!response.ok) {
       if (response.status === 401) {
         // Manejo de expiración de token
+        localStorage.removeItem('authToken');
         throw new Error('Token expired');
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'name' in error && (error as { name?: string }).name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Request timed out');
     }
     throw error;

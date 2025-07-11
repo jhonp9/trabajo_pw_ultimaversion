@@ -17,20 +17,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
 
   const login = async (email: string, password: string) => {
-    try {
-      const data = await apiClient('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const data = await apiClient('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+      credentials: 'include' // Para manejar cookies
+    });
 
-      localStorage.setItem('authToken', data.token);
-      setUser(data.user);
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
+    setUser({
+      ...data.user,
+      role: data.user.role.toLowerCase() as 'user' | 'admin'
+    });
+    return true;
+  } catch (error) {
+    console.error('Login error:', error);
+    return false;
+  }
+};
 
   const logout = () => {
     localStorage.removeItem('authToken');
@@ -64,27 +67,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (newUser: Omit<Usuario, 'id'>) => {
-    try {
-      const response = await fetch('http://localhost:5000/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-      
-      if (!response.ok) {
-        return false;
-      }
-      
-      const createdUser = await response.json();
-      setUser(createdUser);
-      return true;
-    } catch (error) {
-      console.error('Registration error:', error);
-      return false;
-    }
-  };
+  try {
+    const data = await apiClient('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        ...newUser,
+        role: 'user' // Asegura que coincida con el backend
+      }),
+      credentials: 'include'
+    });
+
+    setUser({
+      ...data.user,
+      role: data.user.role.toLowerCase() as 'user' | 'admin'
+    });
+    return true;
+  } catch (error) {
+    console.error('Registration error:', error);
+    return false;
+  }
+};
 
   useEffect(() => {
   const token = localStorage.getItem('authToken');

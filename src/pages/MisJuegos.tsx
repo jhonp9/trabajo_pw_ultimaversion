@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Juego } from '../types/juego';
 import { useState } from 'react';
 
-const URL = "http://localhost:5000" // URL Base
+const URL = "http://localhost:3000" // URL Base
 
 const MyGamesPage = () => {
     const { user } = useAuth();
