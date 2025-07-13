@@ -1,56 +1,69 @@
-// components/admin/NoticiaFormModal.tsx
-import { Modal, Button, Form } from 'react-bootstrap';
-import { useAdmin } from '..//context/AdminContext';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import type { Noticia } from '../types/noticia';
+import { useAuth } from '../components/Auth/AuthContext';
 
 interface NoticiaFormModalProps {
   show: boolean;
   onHide: () => void;
   noticia: Noticia | null;
   mode: 'add' | 'edit';
+  onSubmit: (noticiaData: Partial<Noticia>) => Promise<void>;
 }
 
-const NoticiaFormModal = ({ show, onHide, noticia, mode }: NoticiaFormModalProps) => {
-  const { addNoticia, updateNoticia } = useAdmin();
-  const [formData, setFormData] = useState<Omit<Noticia, 'id' | 'fecha'>>({
-    titulo: '',
-    contenido: '',
-    imagen: '',
-    autor: ''
+const NoticiaFormModal = ({ show, onHide, noticia, mode, onSubmit }: NoticiaFormModalProps) => {
+  const { user } = useAuth();
+  const [formData, setFormData] = useState<Partial<Noticia>>({
+    title: '',
+    content: '',
+    image: '',
+    author: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (mode === 'edit' && noticia) {
       setFormData({
-        titulo: noticia.titulo,
-        contenido: noticia.contenido,
-        imagen: noticia.imagen || '',
-        autor: noticia.autor
+        title: noticia.title,
+        content: noticia.content,
+        image: noticia.image || '',
+        author: noticia.author
       });
     } else {
       setFormData({
-        titulo: '',
-        contenido: '',
-        imagen: '',
-        autor: ''
+        title: '',
+        content: '',
+        image: '',
+        author: user?.name || 'Admin'
       });
     }
-  }, [mode, noticia]);
+  }, [mode, noticia, user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === 'add') {
-      addNoticia(formData);
-    } else if (mode === 'edit' && noticia) {
-      updateNoticia(noticia.id, formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      if (!formData.title || !formData.content) {
+        throw new Error('Título y contenido son obligatorios');
+      }
+
+      await onSubmit({
+        ...formData,
+        author: formData.author|| user?.name || 'Admin'
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar la noticia');
+    } finally {
+      setLoading(false);
     }
-    onHide();
   };
 
   return (
@@ -59,25 +72,27 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode }: NoticiaFormModalProps
         <Modal.Title>{mode === 'add' ? 'Agregar Noticia' : 'Editar Noticia'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {error && <Alert variant="danger">{error}</Alert>}
+        
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label>Título</Form.Label>
+            <Form.Label>Título *</Form.Label>
             <Form.Control
               type="text"
               name="titulo"
-              value={formData.titulo}
+              value={formData.title || ''}
               onChange={handleChange}
               required
             />
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Contenido</Form.Label>
+            <Form.Label>Contenido *</Form.Label>
             <Form.Control
               as="textarea"
               rows={5}
               name="contenido"
-              value={formData.contenido}
+              value={formData.content || ''}
               onChange={handleChange}
               required
             />
@@ -86,30 +101,38 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode }: NoticiaFormModalProps
           <Form.Group className="mb-3">
             <Form.Label>URL de la Imagen (opcional)</Form.Label>
             <Form.Control
-              type="text"
+              type="url"
               name="imagen"
-              value={formData.imagen}
+              value={formData.image || ''}
               onChange={handleChange}
+              placeholder="https://ejemplo.com/imagen.jpg"
             />
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Autor</Form.Label>
+            <Form.Label>Autor *</Form.Label>
             <Form.Control
               type="text"
               name="autor"
-              value={formData.autor}
+              value={formData.author || ''}
               onChange={handleChange}
               required
             />
           </Form.Group>
 
           <div className="d-flex justify-content-end">
-            <Button variant="secondary" onClick={onHide} className="me-2">
+            <Button variant="secondary" onClick={onHide} className="me-2" disabled={loading}>
               Cancelar
             </Button>
-            <Button variant="primary" type="submit">
-              {mode === 'add' ? 'Agregar Noticia' : 'Guardar Cambios'}
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {mode === 'add' ? 'Agregando...' : 'Guardando...'}
+                </>
+              ) : (
+                mode === 'add' ? 'Agregar Noticia' : 'Guardar Cambios'
+              )}
             </Button>
           </div>
         </Form>

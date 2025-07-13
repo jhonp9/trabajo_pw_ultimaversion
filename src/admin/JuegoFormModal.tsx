@@ -1,6 +1,4 @@
-// components/admin/JuegoFormModal.tsx
-import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import { useAdmin } from '../context/AdminContext';
+import { Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import type { Juego } from '../types/juego';
 
@@ -9,10 +7,10 @@ interface JuegoFormModalProps {
   onHide: () => void;
   juego: Juego | null;
   mode: 'add' | 'edit';
+  onSubmit: (juegoData: Partial<Juego>) => Promise<void>;
 }
 
-const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
-  const { addJuego, updateJuego } = useAdmin();
+const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalProps) => {
   const [formData, setFormData] = useState<Partial<Juego>>({
     title: '',
     description: '',
@@ -27,13 +25,29 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
     },
     trailerUrl: ''
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Inicializar formulario con datos del juego si está en modo edición
   useEffect(() => {
     if (mode === 'edit' && juego) {
-      setFormData(juego);
+      setFormData({
+        title: juego.title,
+        description: juego.description,
+        price: juego.price,
+        images: [...juego.images],
+        genres: [...juego.genres],
+        platforms: [...juego.platforms],
+        oferta: juego.oferta || '',
+        requirements: {
+          minimum: [...juego.requirements.minimum],
+          recommended: [...juego.requirements.recommended]
+        },
+        trailerUrl: juego.trailerUrl
+      });
     } else {
+      // Resetear formulario para modo agregar
       setFormData({
         title: '',
         description: '',
@@ -51,12 +65,12 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
     }
   }, [mode, juego]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (field: string, value: string) => {
+  const handleArrayChange = (field: 'genres' | 'platforms', value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value.split(',').map(item => item.trim())
@@ -84,14 +98,15 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
 
   const handleRequirementChange = (type: 'minimum' | 'recommended', index: number, value: string) => {
     setFormData(prev => {
-      const prevRequirements = prev.requirements ?? { minimum: [''], recommended: [''] };
-      const updatedType = [...(prevRequirements[type] ?? [''])];
-      updatedType[index] = value;
+      const requirements = prev.requirements || { minimum: [''], recommended: [''] };
+      const updated = [...requirements[type]];
+      updated[index] = value;
+      
       return {
         ...prev,
         requirements: {
-          ...prevRequirements,
-          [type]: updatedType
+          ...requirements,
+          [type]: updated
         }
       };
     });
@@ -99,12 +114,12 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
 
   const addRequirementField = (type: 'minimum' | 'recommended') => {
     setFormData(prev => {
-      const prevRequirements = prev.requirements ?? { minimum: [''], recommended: [''] };
+      const requirements = prev.requirements || { minimum: [''], recommended: [''] };
       return {
         ...prev,
         requirements: {
-          ...prevRequirements,
-          [type]: [...(prevRequirements[type] ?? []), '']
+          ...requirements,
+          [type]: [...requirements[type], '']
         }
       };
     });
@@ -112,12 +127,12 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
 
   const removeRequirementField = (type: 'minimum' | 'recommended', index: number) => {
     setFormData(prev => {
-      const prevRequirements = prev.requirements ?? { minimum: [''], recommended: [''] };
+      const requirements = prev.requirements || { minimum: [''], recommended: [''] };
       return {
         ...prev,
         requirements: {
-          ...prevRequirements,
-          [type]: (prevRequirements[type] ?? []).filter((_, i) => i !== index)
+          ...requirements,
+          [type]: requirements[type].filter((_, i) => i !== index)
         }
       };
     });
@@ -127,17 +142,21 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
-      if (mode === 'add') {
-        await addJuego(formData as Omit<Juego, 'id'>);
-      } else if (mode === 'edit' && juego) {
-        await updateJuego(juego.id, formData);
+      // Validación básica
+      if (!formData.title || !formData.description || !formData.trailerUrl) {
+        throw new Error('Los campos obligatorios deben completarse');
       }
+
+      if ((formData.images?.length || 0) < 1) {
+        throw new Error('Debe agregar al menos una imagen');
+      }
+
+      await onSubmit(formData);
       onHide();
     } catch (err) {
-      setError('Error al guardar el juego');
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Error al guardar el juego');
     } finally {
       setLoading(false);
     }
@@ -149,10 +168,11 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
         <Modal.Title>{mode === 'add' ? 'Agregar Juego' : 'Editar Juego'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <Alert variant="danger">{error}</Alert>}
+        
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label>Título</Form.Label>
+            <Form.Label>Título *</Form.Label>
             <Form.Control
               type="text"
               name="title"
@@ -163,7 +183,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Descripción</Form.Label>
+            <Form.Label>Descripción *</Form.Label>
             <Form.Control
               as="textarea"
               rows={3}
@@ -177,10 +197,11 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           <Row className="mb-3">
             <Col md={6}>
               <Form.Group>
-                <Form.Label>Precio</Form.Label>
+                <Form.Label>Precio *</Form.Label>
                 <Form.Control
                   type="number"
                   step="0.01"
+                  min="0"
                   name="price"
                   value={formData.price || 0}
                   onChange={handleChange}
@@ -203,7 +224,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>Géneros (separados por comas)</Form.Label>
+            <Form.Label>Géneros (separados por comas) *</Form.Label>
             <Form.Control
               type="text"
               value={(formData.genres || []).join(', ')}
@@ -213,7 +234,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Plataformas (separadas por comas)</Form.Label>
+            <Form.Label>Plataformas (separadas por comas) *</Form.Label>
             <Form.Control
               type="text"
               value={(formData.platforms || []).join(', ')}
@@ -223,7 +244,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>URL del Trailer (ID de YouTube)</Form.Label>
+            <Form.Label>URL del Trailer (ID de YouTube) *</Form.Label>
             <Form.Control
               type="text"
               name="trailerUrl"
@@ -234,11 +255,11 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Imágenes (URLs)</Form.Label>
+            <Form.Label>Imágenes (URLs) *</Form.Label>
             {(formData.images || []).map((image, index) => (
               <div key={index} className="d-flex mb-2">
                 <Form.Control
-                  type="text"
+                  type="url"
                   value={image}
                   onChange={(e) => handleImageChange(index, e.target.value)}
                   required
@@ -247,6 +268,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
                   variant="danger" 
                   onClick={() => removeImageField(index)}
                   className="ms-2"
+                  disabled={(formData.images?.length || 0) <= 1}
                 >
                   Eliminar
                 </Button>
@@ -265,7 +287,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
           
           <Row>
             <Col md={6}>
-              <h6>Mínimos</h6>
+              <h6>Mínimos *</h6>
               {(formData.requirements?.minimum || []).map((req, index) => (
                 <div key={`min-${index}`} className="d-flex mb-2">
                   <Form.Control
@@ -278,6 +300,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
                     variant="danger" 
                     onClick={() => removeRequirementField('minimum', index)}
                     className="ms-2"
+                    disabled={(formData.requirements?.minimum.length || 0) <= 1}
                   >
                     Eliminar
                   </Button>
@@ -287,12 +310,13 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
                 variant="secondary" 
                 onClick={() => addRequirementField('minimum')}
                 size="sm"
+                className="mb-3"
               >
                 Agregar Requisito
               </Button>
             </Col>
             <Col md={6}>
-              <h6>Recomendados</h6>
+              <h6>Recomendados *</h6>
               {(formData.requirements?.recommended || []).map((req, index) => (
                 <div key={`rec-${index}`} className="d-flex mb-2">
                   <Form.Control
@@ -305,6 +329,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
                     variant="danger" 
                     onClick={() => removeRequirementField('recommended', index)}
                     className="ms-2"
+                    disabled={(formData.requirements?.recommended.length || 0) <= 1}
                   >
                     Eliminar
                   </Button>
@@ -314,6 +339,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
                 variant="secondary" 
                 onClick={() => addRequirementField('recommended')}
                 size="sm"
+                className="mb-3"
               >
                 Agregar Requisito
               </Button>
@@ -325,7 +351,14 @@ const JuegoFormModal = ({ show, onHide, juego, mode }: JuegoFormModalProps) => {
               Cancelar
             </Button>
             <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? 'Guardando...' : mode === 'add' ? 'Agregar Juego' : 'Guardar Cambios'}
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {mode === 'add' ? 'Agregando...' : 'Guardando...'}
+                </>
+              ) : (
+                mode === 'add' ? 'Agregar Juego' : 'Guardar Cambios'
+              )}
             </Button>
           </div>
         </Form>

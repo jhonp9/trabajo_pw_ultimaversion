@@ -5,7 +5,7 @@ import GameCatalog from './pages/GameCatalog';
 import BestSellers from './pages/BestSellers';
 import TopRated from './pages/TopRated';
 import { Login } from './pages/Login';
-import { Register } from './pages/Register';
+import  Register  from './pages/Register';
 import { VerifyWithEmail } from './pages/VerifyWithEmail';
 import { VerifyUser } from './pages/VerifyUser';
 import { ResetPassword } from './pages/ResetPassword';
@@ -17,7 +17,7 @@ import NoticiasPage from './pages/NoticiasPage';
 import AdminNoticias from './admin/AdminNoticias';
 import AdminUsuarios from './admin/AdminUsuarios';
 import AdminVentas from './admin/AdminVentas';
-import { AdminJuegos } from './admin/AdminJuegos';
+import  AdminJuegos  from './admin/AdminJuegos';
 import AdminPerfil from './pages/AdminPerfil';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 function App() {

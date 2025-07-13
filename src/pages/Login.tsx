@@ -13,32 +13,33 @@ export const Login = () => {
   const { user } = useAuth();
   
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); // Limpiar errores previos
-  };
 
-  const validar = async (email: string, password: string) => {
-  if (!email || !password) {
-    setError('Por favor, completa todos los campos.');
-    return false;
-  }
-  
-  const success = await login(email, password); // Añade await aquí
-  if (!success) {
-    setError('Credenciales inválidas');
-    return false;
-  }
-  
-  // Redirigir según el rol
-  if (user?.role === 'admin') {
-    navigate('/admin/juegos');
-  } else {
-    navigate('/');
-  }
-  
-  return true;
-}
+    if (!email || !password) {
+      setError('Por favor, completa todos los campos.');
+      return;
+    }
+
+    try {
+      const success = await login(email, password);
+      if (!success) {
+        setError('Credenciales inválidas');
+        return;
+      }
+
+      // Redirigir según el rol
+      if (user?.role === 'admin') {
+        navigate('/admin/juegos');
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      setError('Error al iniciar sesión. Por favor, intenta nuevamente.');
+      console.error('Login error:', err);
+    }
+  };
 
   return (
     <AuthLayout title="Iniciar Sesión">
@@ -87,12 +88,11 @@ export const Login = () => {
       </div>
       
       <button 
-        type="submit" 
-        className="btn btn-login w-100"
-        onClick={async () => await validar(email, password) ? login(email, password) : setError('Credenciales inválidas')}
-      >
-        Ingresar
-      </button>
+          type="submit" 
+          className="btn btn-login w-100"
+        >
+          Ingresar
+        </button>
 
       <div className="auth-links">
         <button 

@@ -1,9 +1,8 @@
-// types/noticia.type.ts
 export interface Noticia {
   id: string;
-  titulo: string;
-  contenido: string;
-  fecha: string;
-  imagen?: string;
-  autor: string;
+  title: string;       // Cambiado de titulo
+  content: string;     // Cambiado de contenido
+  date: string;        // Cambiado de fecha
+  image?: string;      // Cambiado de imagen
+  author: string;      // Cambiado de autor
 }

@@ -17,23 +17,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
 
   const login = async (email: string, password: string) => {
-  try {
-    const data = await apiClient('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-      credentials: 'include' // Para manejar cookies
-    });
+    try {
+      const data = await apiClient('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
 
-    setUser({
-      ...data.user,
-      role: data.user.role.toLowerCase() as 'user' | 'admin'
-    });
-    return true;
-  } catch (error) {
-    console.error('Login error:', error);
-    return false;
-  }
-};
+      setUser({
+        ...data,
+        role: data.role.toLowerCase() as 'user' | 'admin'
+      });
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('authToken');

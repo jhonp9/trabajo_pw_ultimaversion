@@ -4,6 +4,7 @@ import { FaUser, FaEnvelope } from 'react-icons/fa';
 type AuthInputProps = InputHTMLAttributes<HTMLInputElement> & {
   icon?: 'user' | 'email';
   label?: string;
+  error?: string;
 };
 
 const AuthInput = ({ icon, label, ...props }: AuthInputProps) => {

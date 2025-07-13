@@ -2,9 +2,8 @@ import { useAuth } from '../components/Auth/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import type { Juego } from '../types/juego';
-import { useState } from 'react';
-
-const URL = "http://localhost:3000" // URL Base
+import { useEffect, useState } from 'react';
+import { apiClient } from '../api/client';
 
 const MyGamesPage = () => {
     const { user } = useAuth();
@@ -13,11 +12,16 @@ const MyGamesPage = () => {
 
     const [ lista, setLista ] = useState<Juego[]>([])
       
-      const httpObtenerTODOs = async () => {
-            const response = await fetch(`${URL}/`)
-            const data = await response.json()
+    const httpObtenerJuegos = async () => {
+            const data = await apiClient('/api/games/', {
+                method: 'GET',
+            });
             setLista(data)
-        }
+    }
+
+    useEffect(() => {
+        httpObtenerJuegos();
+    }, []);
 
     // Filtra los juegos comprados
     const myGames = lista.filter(game => 
