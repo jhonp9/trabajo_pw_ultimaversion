@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import MainPage from './pages/MainPage';
 import GameCatalog from './pages/GameCatalog';
@@ -23,7 +23,6 @@ import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 function App() {
   return (
     <CartProvider>
-      <Router>
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/categorias" element={<GameCatalog />} />
@@ -52,7 +51,6 @@ function App() {
           <Route path="/admin/ventas" element={<AdminVentas />} />
           <Route path="/admin/perfil" element={<AdminPerfil />} />
         </Routes>
-      </Router>
     </CartProvider>
   );
 }
