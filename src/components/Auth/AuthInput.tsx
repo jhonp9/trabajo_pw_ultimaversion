@@ -4,7 +4,7 @@ import { FaUser, FaEnvelope } from 'react-icons/fa';
 type AuthInputProps = InputHTMLAttributes<HTMLInputElement> & {
   icon?: 'user' | 'email';
   label?: string;
-  error?: string | boolean; // Acepta string o boolean para compatibilidad con Formik
+  error?: string | boolean;
 };
 
 const AuthInput = ({ icon, label, error, ...props }: AuthInputProps) => {

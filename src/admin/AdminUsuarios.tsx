@@ -13,10 +13,8 @@ const AdminUsuarios = () => {
   const handleDelete = async (id: number) => {
   try {
     await deleteUsuario(id);
-    // Mostrar mensaje de éxito y refrescar datos
   } catch (error) {
     console.error('Error deleting user:', error);
-    // Mostrar mensaje de error
   } finally {
     setDeleteConfirm(null);
   }

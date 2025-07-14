@@ -77,7 +77,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalP
     
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
-  
+
   const handleArrayChange = (field: 'genres' | 'platforms', value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -152,7 +152,7 @@ const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalP
     setError('');
 
     try {
-      // Validar que el trailerUrl tenga exactamente 11 caracteres (código YouTube)
+      // Validar que el trailerUrl tenga exactamente 11 caracteres porque solo es el código del video de YouTube
       if (!formData.trailerUrl || formData.trailerUrl.length !== 11) {
         throw new Error('El código del trailer debe tener exactamente 11 caracteres');
       }

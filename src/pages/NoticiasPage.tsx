@@ -1,4 +1,3 @@
-// NoticiasPage.tsx
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
 import Navbar from '../components/UI/Navbar';
 import { Card } from 'react-bootstrap';

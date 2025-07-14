@@ -9,7 +9,6 @@ const ForgotPassword = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de recuperación
   };
 
   return (

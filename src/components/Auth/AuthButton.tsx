@@ -15,7 +15,7 @@ export const AuthButton = ({
   return (
     <button 
       {...props}
-      type={props.type || 'button'} // Asegura que siempre haya un tipo
+      type={props.type || 'button'} 
       className={`auth-button btn-${variant} ${variant === 'primary' ? 'btn-login' : 'btn-outline-primary'}`}
     >
       {icon && <span className="auth-button-icon me-2">{icon}</span>}

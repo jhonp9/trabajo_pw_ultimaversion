@@ -7,7 +7,7 @@ import { apiClient } from '../api/client';
 
 const MyGamesPage = () => {
     const { user } = useAuth();
-    const { purchasedGames } = useCart(); // Asume que has extendido tu CartContext para manejar juegos comprados
+    const { purchasedGames } = useCart(); 
     const navigate = useNavigate();
 
     const [ lista, setLista ] = useState<Juego[]>([])
@@ -26,7 +26,7 @@ const MyGamesPage = () => {
     // Filtra los juegos comprados
     const myGames = lista.filter(game => 
         purchasedGames.includes(game.id) || 
-        (user?.email === 'admin' && game.id <= 3) // Ejemplo: admin ve algunos juegos por defecto
+        (user?.email === 'admin' && game.id <= 3) 
     );
 
     return (

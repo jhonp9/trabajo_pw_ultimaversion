@@ -1,4 +1,3 @@
-// components/UI/SearchResults.tsx
 import type { Juego } from '../../types/juego';
 import { useNavigate } from 'react-router-dom';
 

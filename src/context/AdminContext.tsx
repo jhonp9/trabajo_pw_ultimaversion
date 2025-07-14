@@ -1,4 +1,3 @@
-// AdminContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Juego } from '../types/juego';
 import type { Noticia } from '../types/noticia';
@@ -35,7 +34,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Datos simulados para ventas (en producción vendría del backend)
+  // Datos simulados para ventas, no me dio tiempo de implementar la API
   const ventasPorMes = [
     { mes: 'Enero', total: 12000 },
     { mes: 'Febrero', total: 18000 },
@@ -124,7 +123,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       setJuegos(prev => prev.map(j => j.id === id ? updatedJuego : j));
       return updatedJuego;
     } catch (err) {
-      console.error('Detalles del error:', err); // Log detallado
+      console.error('Detalles del error:', err);
       throw new Error('Error al actualizar el juego');
     }
   };

@@ -1,4 +1,3 @@
-// AuthContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Usuario } from '../../types/usuarios';
 import { apiClient } from '../../api/client';

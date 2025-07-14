@@ -1,4 +1,3 @@
-// pages/SearchPage.tsx
 import { useLocation } from 'react-router-dom';
 import JuegosLista from '../components/Juegos/JuegosLista';
 import Navbar from '../components/UI/Navbar';

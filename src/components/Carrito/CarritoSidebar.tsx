@@ -35,10 +35,10 @@ const CarritoSidebar = () => {
 
   const handleCheckout = () => {
     if (!user) {
-      setShowConfirm(true); // Mostrar mensaje de login requerido
+      setShowConfirm(true); 
       return;
     }
-    setShowPayment(true); // Mostrar formulario de pago
+    setShowPayment(true); 
   };
 
   return (

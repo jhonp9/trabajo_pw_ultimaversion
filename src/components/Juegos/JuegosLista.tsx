@@ -12,7 +12,6 @@ const JuegosLista = ({ juegos }: JuegosListaProps) => {
   const [selectedGame, setSelectedGame] = useState<Juego | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Verifica los juegos recibidos
   console.log('Juegos recibidos en JuegosLista:', juegos);
 
   const handleGameClick = (juego: Juego) => {
@@ -24,7 +23,7 @@ const JuegosLista = ({ juegos }: JuegosListaProps) => {
     <section className="game-carousel">
       <div className="game-list">
         {juegos.map((juego) => (
-          <div key={juego.id} className="col-6 col-md-8"> {/* Mejor estructura de grid */}
+          <div key={juego.id} className="col-6 col-md-8"> 
             <div 
               className="game-card"
               onClick={() => handleGameClick(juego)}

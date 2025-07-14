@@ -29,7 +29,6 @@ const Navbar = () => {
         httpObtenerJuegos();
       }, []);
 
-    // Manejar búsqueda en tiempo real
     useEffect(() => {
         if (searchQuery.trim() === '') {
             setSearchResults([]);

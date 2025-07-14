@@ -1,4 +1,3 @@
-// pages/admin/AdminPerfil.tsx
 import { useAuth } from '../components/Auth/AuthContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
