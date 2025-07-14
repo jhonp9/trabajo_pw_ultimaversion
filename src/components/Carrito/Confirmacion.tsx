@@ -5,10 +5,15 @@ interface ConfirmacionProps {
   message: string | ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
-  type?: 'clear' | 'checkout' | 'payment';
+  type?: 'clear' | 'checkout' | 'payment' | 'receipt';
 }
 
-const Confirmacion = ({ message, onConfirm, onCancel, type = 'clear' }: ConfirmacionProps) => {
+const Confirmacion = ({ 
+  message, 
+  onConfirm, 
+  onCancel, 
+  type = 'clear',
+}: ConfirmacionProps) => {
   const { user } = useAuth();
 
   useEffect(() => {
@@ -24,7 +29,9 @@ const Confirmacion = ({ message, onConfirm, onCancel, type = 'clear' }: Confirma
     <div className="confirm-overlay">
       <div className="confirm-dialog">
         <div className="confirm-content">
-          <p className="mensaje">{message}</p>
+          <div className="mensaje">
+            {message}
+          </div>
           
           {!user && type === 'checkout' && (
             <div className="alert alert-warning mb-3">

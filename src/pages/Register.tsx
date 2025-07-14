@@ -1,28 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Formik, Form, ErrorMessage } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { authService } from '../services/auth.service';
+import { authService } from '../services/auth.service.front';
 import VerificationModal from '../components/Auth/VerificationModal';
-import { useVerification } from '../hooks/useVerification';
 import { AuthLayout } from '../components/Auth/AuthLayout';
 import AuthInput from '../components/Auth/AuthInput';
 import { AuthButton } from '../components/Auth/AuthButton';
 
 const Register = () => {
   const navigate = useNavigate();
-  const {
-    verificationModal,
-    pendingEmail,
-    registerError,
-    setRegisterError,
-    verificationSuccess,
-    setVerificationModal,
-    startVerification,
-    verifyCode,
-    resendCode
-  } = useVerification();
-  const [loading, setLoading] = useState(false);
+  const [verificationModal, setVerificationModal] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [registerError, setRegisterError] = useState('');
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   const validationSchema = Yup.object().shape({
     firstName: Yup.string().required('Nombre es requerido'),
@@ -57,38 +48,60 @@ const Register = () => {
     email: string;
     password: string;
     username: string;
-    birthdate?: string;
     terms: boolean;
   }) => {
-    setLoading(true);
+    setRegisterError('');
+    
     try {
-      // Crear nombre de usuario combinando nombre y apellido si no se proporciona
       const username = values.username || `${values.firstName}${values.lastName}`.toLowerCase();
       
-      const { success, message } = await authService.registerUser({
+      const { success, message, requiresVerification } = await authService.registerUser({
         name: username,
         email: values.email,
         password: values.password
       });
       
-      if (success) {
-        startVerification(values.email);
+      if (success && requiresVerification) {
+        setPendingEmail(values.email);
+        setVerificationModal(true);
+      } else if (success) {
+        navigate('/login', { state: { registered: true } });
       } else {
         setRegisterError(message || 'Error en el registro');
       }
     } catch (error: any) {
       setRegisterError(error.message || 'Error en el registro');
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Redirigir si la verificación fue exitosa
   useEffect(() => {
     if (verificationSuccess) {
       navigate('/login', { state: { verified: true } });
     }
   }, [verificationSuccess, navigate]);
+
+   const handleVerification = async (code: string): Promise<boolean> => {
+    try {
+      const { success, message } = await authService.verifyRegistrationCode(
+        pendingEmail, 
+        code
+      );
+      
+      if (success) {
+        setVerificationModal(false);
+        setVerificationSuccess(true);
+        navigate('/login', { state: { verified: true } });
+        return true;
+      } else {
+        setRegisterError(message || 'Código de verificación incorrecto');
+        return false;
+      }
+    } catch (error: any) {
+      setRegisterError(error.message || 'Error al verificar el código');
+      return false;
+    }
+  };
+
   return (
     <AuthLayout title="Crear Cuenta">
       <Formik
@@ -105,7 +118,7 @@ const Register = () => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched, handleChange, handleBlur, values }) => (
+        {({ errors, touched, handleChange, handleBlur, values, isSubmitting }) => (
           <Form className="auth-form">
             {registerError && (
               <div className="alert alert-danger mb-3">
@@ -117,28 +130,26 @@ const Register = () => {
               <div className="col-md-6 mb-3">
                 <AuthInput
                   type="text"
-                  id="firstName"
                   name="firstName"
                   label="Nombre"
                   placeholder="Ej: Juan"
                   value={values.firstName}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors.firstName && touched.firstName ? errors.firstName : ''}
+                  error={touched.firstName && errors.firstName}
                   required
                 />
               </div>
               <div className="col-md-6 mb-3">
                 <AuthInput
                   type="text"
-                  id="lastName"
                   name="lastName"
                   label="Apellido"
                   placeholder="Ej: Pérez"
                   value={values.lastName}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors.lastName && touched.lastName ? errors.lastName : ''}
+                  error={touched.lastName && errors.lastName}
                   required
                 />
               </div>
@@ -146,58 +157,53 @@ const Register = () => {
 
             <AuthInput
               type="text"
-              id="username"
               name="username"
               label="Nombre de Usuario"
               placeholder="Ej: juanplayer (opcional)"
               value={values.username}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors.username && touched.username ? errors.username : ''}
+              error={touched.username && errors.username}
             />
 
             <AuthInput
               type="email"
-              id="email"
               name="email"
               label="Correo Electrónico"
               placeholder="tucorreo@ejemplo.com"
               value={values.email}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors.email && touched.email ? errors.email : ''}
+              error={touched.email && errors.email}
               required
             />
 
             <AuthInput
               type="password"
-              id="password"
               name="password"
               label="Contraseña"
               placeholder="••••••••"
               value={values.password}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors.password && touched.password ? errors.password : ''}
+              error={touched.password && errors.password}
               required
             />
 
             <AuthInput
               type="password"
-              id="confirmPassword"
               name="confirmPassword"
               label="Confirmar Contraseña"
               placeholder="••••••••"
               value={values.confirmPassword}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors.confirmPassword && touched.confirmPassword ? errors.confirmPassword : ''}
+              error={touched.confirmPassword && errors.confirmPassword}
               required
             />
 
             <AuthInput
               type="date"
-              id="birthdate"
               name="birthdate"
               label="Fecha de Nacimiento (opcional)"
               value={values.birthdate}
@@ -224,8 +230,12 @@ const Register = () => {
               )}
             </div>
 
-            <AuthButton type="submit" variant="primary" disabled={loading}>
-              {loading ? 'Registrando...' : 'Registrarse'}
+            <AuthButton 
+              type="submit"
+              variant="primary" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Registrando...' : 'Registrarse'}
             </AuthButton>
 
             <div className="auth-login-link text-center links">
@@ -244,10 +254,12 @@ const Register = () => {
 
       <VerificationModal
         show={verificationModal}
-        onHide={() => setVerificationModal(false)}
+        onHide={() => {
+          setVerificationModal(false);
+          setRegisterError('');
+        }}
         email={pendingEmail}
-        onVerify={verifyCode}
-        onResend={resendCode}
+        onVerify={handleVerification}
         error={registerError}
       />
     </AuthLayout>

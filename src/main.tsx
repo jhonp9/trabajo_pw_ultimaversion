@@ -6,8 +6,6 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AuthProvider } from './components/Auth/AuthContext';
 import { AdminProvider } from './context/AdminContext';
-import { ErrorBoundary } from './components/ErrorBoundary';
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

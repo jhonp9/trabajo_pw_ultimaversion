@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authService } from '../services/auth.service';
+import { authService } from '../services/auth.service.front';
 
 export const useVerification = () => {
   const [verificationModal, setVerificationModal] = useState(false);

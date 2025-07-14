@@ -1,6 +1,7 @@
 // CartContext.tsx
 import { createContext, useContext, useState, type ReactNode, useCallback, useEffect } from 'react';
 import { useAuth } from '../components/Auth/AuthContext';
+import { apiClient } from '../api/client';
 
 interface CartItem {
   id: number;
@@ -23,7 +24,6 @@ interface CartContextType {
   setShowConfirm: (show: boolean) => void;
   notification: { show: boolean; message: string };
   showNotification: (message: string) => void;
-  checkout: (userId: number) => Promise<boolean>;
   purchasedGames: number[];
   showPayment: boolean;
   setShowPayment: (show: boolean) => void;
@@ -102,52 +102,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     showNotification('Carrito vaciado');
   }, []);
 
-  // Procesar compra
-  const checkout = useCallback(async (userId: number): Promise<boolean> => {
-    try {
-      // Procesar cada juego en el carrito
-      const purchasePromises = cartItems.map(item => 
-        fetch(`http://localhost:5000/api/games/${item.id}/purchase`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user?.email}`
-          },
-          body: JSON.stringify({
-            userId,
-            quantity: item.quantity
-          })
-        })
-      );
-
-      await Promise.all(purchasePromises);
-      
-      // Actualizar lista de juegos comprados
-      const purchasedIds = cartItems.map(item => item.id);
-      setPurchasedGames(prev => [...prev, ...purchasedIds]);
-      
-      // Vaciar carrito
-      setCartItems([]);
-      setShowCart(false);
-      showNotification('Compra realizada con éxito!');
-      
-      return true;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      showNotification('Error al procesar la compra');
-      return false;
-    }
-  }, [cartItems, user]);
 
   // Procesar pago (similar a checkout pero con más pasos)
   const processPayment = useCallback(async (userId: number): Promise<boolean> => {
-    const success = await checkout(userId);
-    if (success) {
-      setShowPayment(false);
-      setShowReceipt(true);
+  try {
+    // 1. Procesar la compra
+    const response = await apiClient('/api/games/process-purchase', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        items: cartItems.map(item => ({
+          id: item.id,
+          quantity: item.quantity
+        }))
+      })
+    });
+
+      if (response.success) {
+        // Actualizar lista de juegos comprados
+        const purchasedIds = cartItems.map(item => item.id);
+        setPurchasedGames(prev => [...prev, ...purchasedIds]);
+        
+        // Vaciar carrito
+        setCartItems([]);
+        setShowPayment(false);
+        setShowReceipt(true);
+        showNotification('Compra realizada con éxito!');
+        return true;
+    
     }
-    return success;
-  }, [checkout]);
+    return false;
+  } catch (error) {
+    console.error('Payment processing error:', error);
+    showNotification('Error al procesar el pago');
+    return false;
+  }
+}, [cartItems]);
 
   // Mostrar notificación
   const showNotification = useCallback((message: string) => {
@@ -167,7 +157,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
-      checkout,
       showCart,
       setShowCart,
       showConfirm,

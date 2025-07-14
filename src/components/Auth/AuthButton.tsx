@@ -14,8 +14,9 @@ export const AuthButton = ({
 }: AuthButtonProps) => {
   return (
     <button 
-      className={`auth-button btn-${variant} ${variant === 'primary' ? 'btn-login' : 'btn-outline-primary'}`}
       {...props}
+      type={props.type || 'button'} // Asegura que siempre haya un tipo
+      className={`auth-button btn-${variant} ${variant === 'primary' ? 'btn-login' : 'btn-outline-primary'}`}
     >
       {icon && <span className="auth-button-icon me-2">{icon}</span>}
       <span className="auth-button-text">{children}</span>

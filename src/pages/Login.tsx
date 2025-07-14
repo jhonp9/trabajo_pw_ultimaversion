@@ -90,9 +90,9 @@ export const Login = () => {
       <button 
           type="submit" 
           className="btn btn-login w-100"
-        >
-          Ingresar
-        </button>
+      >
+        Ingresar
+      </button>
 
       <div className="auth-links">
         <button 

@@ -1,11 +1,26 @@
 // NoticiasPage.tsx
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
 import Navbar from '../components/UI/Navbar';
-import { useAdmin } from '../context/AdminContext';
 import { Card } from 'react-bootstrap';
+import type { Noticia } from '../types/noticia';
+import { useEffect, useState } from 'react';
+import { apiClient } from '../api/client';
 
 const NoticiasPage = () => {
-  const { noticias } = useAdmin();
+  const [ noticias, setLista ] = useState<Noticia[]>([])
+    
+    const httpObtenerNoticias = async () => {
+          const data = await apiClient('/api/news/', {
+                method: 'GET',
+              });
+          setLista(data)
+      }
+    useEffect(() => {
+      httpObtenerNoticias();
+    }, []);
+  
+    // Verifica los juegos recibidos
+    console.log('Noticias recibidas en setLista:', noticias);
 
   return (
     <div style={{ backgroundColor: '#0a0a0a', minHeight: '100vh' }}>
@@ -22,22 +37,22 @@ const NoticiasPage = () => {
             ) : (
               noticias.map(noticia => (
                 <div key={noticia.id} className="news-card">
-                  {noticia.imagen && (
+                  {noticia.image && (
                     <Card.Img 
                       variant="top" 
-                      src={noticia.imagen} 
+                      src={noticia.image} 
                       style={{ height: '200px', objectFit: 'cover' }}
                     />
                   )}
                   <div className="p-3">
-                    <h2>{noticia.titulo}</h2>
+                    <h2>{noticia.title}</h2>
                     <div className="news-date">
-                      Por {noticia.autor} - {noticia.fecha}
+                      Por {noticia.author} - {noticia.date}
                     </div>
                     <p className="mt-2" style={{ color: '#ccc' }}>
-                      {noticia.contenido.length > 150 
-                        ? `${noticia.contenido.substring(0, 150)}...` 
-                        : noticia.contenido}
+                      {noticia.content.length > 150 
+                        ? `${noticia.content.substring(0, 150)}...` 
+                        : noticia.content}
                     </p>
                   </div>
                 </div>

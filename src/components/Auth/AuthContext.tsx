@@ -18,16 +18,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const data = await apiClient('/api/auth/login', {
+      const response = await apiClient('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
         credentials: 'include'
       });
 
+      if (!response.success) {
+        return false;
+      }
+
       setUser({
-        ...data,
-        role: data.role.toLowerCase() as 'user' | 'admin'
+        ...response.user,
+        role: response.user.role.toLowerCase() as 'user' | 'admin'
       });
+
+      // Guardar token en localStorage
+      localStorage.setItem('authToken', response.token || '');
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -38,28 +45,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     localStorage.removeItem('authToken');
     setUser(null);
+    apiClient('/api/auth/logout', { method: 'POST' }).catch(console.error);
   };
 
   const updateProfile = async (newData: Partial<Usuario>) => {
     if (!user) return false;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${user.id}`, {
+      const response = await apiClient(`/api/users/${user.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.email}` // Simulación básica
-        },
         body: JSON.stringify(newData),
+        credentials: 'include'
       });
       
-      if (!response.ok) {
-        return false;
+      if (response) {
+        setUser({ ...user, ...newData });
+        return true;
       }
-      
-      const updatedUser = await response.json();
-      setUser(updatedUser);
-      return true;
+      return false;
     } catch (error) {
       console.error('Update profile error:', error);
       return false;
@@ -67,36 +70,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (newUser: Omit<Usuario, 'id'>) => {
-  try {
-    const data = await apiClient('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        ...newUser,
-        role: 'user' // Asegura que coincida con el backend
-      }),
-      credentials: 'include'
-    });
+    try {
+      const response = await apiClient('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...newUser,
+          role: 'user'
+        }),
+        credentials: 'include'
+      });
 
-    setUser({
-      ...data.user,
-      role: data.user.role.toLowerCase() as 'user' | 'admin'
-    });
-    return true;
-  } catch (error) {
-    console.error('Registration error:', error);
-    return false;
-  }
-};
+      if (response.success) {
+        setUser({
+          ...response.user,
+          role: response.user.role.toLowerCase() as 'user' | 'admin'
+        });
+        localStorage.setItem('authToken', response.token || '');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
+  };
 
   useEffect(() => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    // Verificar token y cargar usuario
-    apiClient('/api/auth/me')
-      .then(user => setUser(user))
-      .catch(() => logout());
-  }
-}, []);
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      apiClient('/api/auth/me')
+        .then(userData => {
+          setUser({
+            ...userData,
+            role: userData.role.toLowerCase() as 'user' | 'admin'
+          });
+        })
+        .catch(() => logout());
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateProfile, register }}>

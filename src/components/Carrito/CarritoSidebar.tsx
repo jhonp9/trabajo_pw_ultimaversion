@@ -15,7 +15,6 @@ const CarritoSidebar = () => {
     setShowCart,
     showConfirm,
     setShowConfirm,
-    checkout,
     showPayment,
     setShowPayment,
     showReceipt,
@@ -180,9 +179,8 @@ const CarritoSidebar = () => {
           message={
             <>
               <h5 className="mb-3">¡Compra realizada con éxito!</h5>
-              <p>Las claves de tus juegos y la boleta han sido enviadas a:</p>
+              <p>Los detalles de tu compra y las claves de activación han sido enviados a:</p>
               <p className="fw-bold">{user?.email}</p>
-              <p className="small text-muted mt-3">Revisa tu bandeja de entrada o spam.</p>
             </>
           }
           onConfirm={() => setShowReceipt(false)}

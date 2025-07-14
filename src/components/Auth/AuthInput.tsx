@@ -4,10 +4,10 @@ import { FaUser, FaEnvelope } from 'react-icons/fa';
 type AuthInputProps = InputHTMLAttributes<HTMLInputElement> & {
   icon?: 'user' | 'email';
   label?: string;
-  error?: string;
+  error?: string | boolean; // Acepta string o boolean para compatibilidad con Formik
 };
 
-const AuthInput = ({ icon, label, ...props }: AuthInputProps) => {
+const AuthInput = ({ icon, label, error, ...props }: AuthInputProps) => {
   const IconComponent = icon === 'user' ? FaUser : FaEnvelope;
   
   return (
@@ -20,9 +20,12 @@ const AuthInput = ({ icon, label, ...props }: AuthInputProps) => {
           </span>
         )}
         <input 
-          className="form-control auth-input" 
+          className={`form-control auth-input ${error ? 'is-invalid' : ''}`} 
           {...props} 
         />
+        {typeof error === 'string' && error && (
+          <div className="invalid-feedback">{error}</div>
+        )}
       </div>
     </div>
   );
