@@ -1,6 +1,6 @@
 // client.ts
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-const TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '5000');
+const API_BASE_URL = 'https://trabajo-pw-backend-otv4.onrender.com';
+const TIMEOUT = 5000;
 
 export const apiClient = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
   const controller = new AbortController();
