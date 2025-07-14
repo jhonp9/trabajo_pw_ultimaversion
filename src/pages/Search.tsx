@@ -4,21 +4,26 @@ import JuegosLista from '../components/Juegos/JuegosLista';
 import Navbar from '../components/UI/Navbar';
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
 import type { Juego } from '../types/juego';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { apiClient } from '../api/client';
 
 const SearchPage = () => {
     const location = useLocation();
 
-    const [ lista, setLista ] = useState<Juego[]>([])
+    const [ juegos, setLista ] = useState<Juego[]>([])
           
-    const httpObtenerTODOs = async () => {
-        const response = await fetch(`${URL}/`)
-        const data = await response.json()
+    const httpObtenerJuegos = async () => {
+        const data = await apiClient('/api/games/', {
+            method: 'GET',
+            });
         setLista(data)
     }
+    useEffect(() => {
+    httpObtenerJuegos();
+    }, []);
     const query = new URLSearchParams(location.search).get('q') || '';
     
-    const filteredGames = lista.filter(juego =>
+    const filteredGames = juegos.filter(juego =>
         juego.title.toLowerCase().includes(query.toLowerCase())
     );
 

@@ -10,7 +10,6 @@ const AdminNoticias = () => {
   const { 
     noticias, 
     loading, 
-    error,
     addNoticia, 
     updateNoticia, 
     deleteNoticia,
@@ -22,6 +21,7 @@ const AdminNoticias = () => {
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Manejar éxito/error
   useEffect(() => {
@@ -56,20 +56,32 @@ const AdminNoticias = () => {
   };
 
   const handleSubmit = async (noticiaData: Partial<Noticia>) => {
-    try {
-      if (formMode === 'add') {
-        await addNoticia(noticiaData as Omit<Noticia, 'id' | 'fecha'>);
-        setSuccessMessage('Noticia agregada correctamente');
-      } else if (formMode === 'edit' && selectedNoticia) {
-        await updateNoticia(selectedNoticia.id, noticiaData);
-        setSuccessMessage('Noticia actualizada correctamente');
-      }
-      setShowFormModal(false);
-      refreshData();
-    } catch (error) {
-      console.error('Error saving news:', error);
+  try {
+    // Validación básica
+    if (!noticiaData.title || !noticiaData.content) {
+      throw new Error('Título y contenido son obligatorios');
     }
-  };
+
+    const datosAEnviar = {
+      ...noticiaData,
+      author: noticiaData.author || 'Admin',
+      date: new Date().toISOString()
+    };
+
+    if (formMode === 'add') {
+      await addNoticia(datosAEnviar as Omit<Noticia, 'id' | 'fecha'>);
+      setSuccessMessage('Noticia agregada correctamente');
+    } else if (formMode === 'edit' && selectedNoticia) {
+      await updateNoticia(selectedNoticia.id, datosAEnviar);
+      setSuccessMessage('Noticia actualizada correctamente');
+    }
+    setShowFormModal(false);
+    refreshData();
+  } catch (error) {
+    console.error('Error saving news:', error);
+    setError('Error al guardar: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+  }
+};
 
   if (loading) {
     return (

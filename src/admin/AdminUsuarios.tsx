@@ -2,10 +2,25 @@
 import { useAdmin } from '../context/AdminContext';
 import { Table, Button } from 'react-bootstrap';
 import AdminDashboard from '../pages/AdminDashboard';
+import { useState } from 'react';
 
 const AdminUsuarios = () => {
   const { usuarios } = useAdmin();
+  const { deleteUsuario } = useAdmin();
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   console.log('Usuarios:', usuarios);
+
+  const handleDelete = async (id: number) => {
+  try {
+    await deleteUsuario(id);
+    // Mostrar mensaje de éxito y refrescar datos
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    // Mostrar mensaje de error
+  } finally {
+    setDeleteConfirm(null);
+  }
+};
   return (
     <AdminDashboard>
       <div className="admin-usuarios mb-5">
@@ -27,10 +42,7 @@ const AdminUsuarios = () => {
                 <td>{usuario.email}</td>
                 <td>{usuario.role}</td>
                 <td>
-                  <Button variant="warning" size="sm" className="me-2">
-                    Editar
-                  </Button>
-                  <Button variant="danger" size="sm">
+                  <Button variant="danger" size="sm" onClick={() => handleDelete(deleteConfirm!)}>
                     Eliminar
                   </Button>
                 </td>

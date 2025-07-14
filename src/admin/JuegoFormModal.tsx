@@ -66,10 +66,18 @@ const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalP
   }, [mode, juego]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    // Conversión explícita de tipos
+    let finalValue: any = value;
+    
+    if (type === 'number') {
+      finalValue = value === '' ? 0 : parseFloat(value);
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
-
+  
   const handleArrayChange = (field: 'genres' | 'platforms', value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -144,16 +152,17 @@ const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalP
     setError('');
 
     try {
-      // Validación básica
-      if (!formData.title || !formData.description || !formData.trailerUrl) {
-        throw new Error('Los campos obligatorios deben completarse');
+      // Validar que el trailerUrl tenga exactamente 11 caracteres (código YouTube)
+      if (!formData.trailerUrl || formData.trailerUrl.length !== 11) {
+        throw new Error('El código del trailer debe tener exactamente 11 caracteres');
       }
 
-      if ((formData.images?.length || 0) < 1) {
-        throw new Error('Debe agregar al menos una imagen');
-      }
+      // Preparar datos para enviar
+      const datosAEnviar = {
+        ...formData
+      };
 
-      await onSubmit(formData);
+      await onSubmit(datosAEnviar);
       onHide();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar el juego');
@@ -244,14 +253,19 @@ const JuegoFormModal = ({ show, onHide, juego, mode, onSubmit }: JuegoFormModalP
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>URL del Trailer (ID de YouTube) *</Form.Label>
+            <Form.Label>Código del Trailer (YouTube) *</Form.Label>
             <Form.Control
               type="text"
               name="trailerUrl"
               value={formData.trailerUrl || ''}
               onChange={handleChange}
               required
+              placeholder="Ej: dQw4w9WgXcQ"
+              pattern="[a-zA-Z0-9_-]{11}"
             />
+            <Form.Text className="text-muted">
+              Solo el código del video de YouTube (11 caracteres)
+            </Form.Text>
           </Form.Group>
 
           <Form.Group className="mb-3">

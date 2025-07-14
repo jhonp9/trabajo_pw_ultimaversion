@@ -1,22 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CarritoSidebar from '../components/Carrito/CarritoSidebar';
 import JuegosLista from '../components/Juegos/JuegosLista';
 import Navbar from '../components/UI/Navbar';
 import type { Juego } from '../types/juego';
-
-const URL = "http://localhost:5000" // URL Base
+import { apiClient } from '../api/client';
 
 const BestSellers = () => {
 
-  const [ lista, setLista ] = useState<Juego[]>([])
-    
-    const httpObtenerTODOs = async () => {
-          const response = await fetch(`${URL}/`)
-          const data = await response.json()
-          setLista(data)
-      }
+  const [ juegos, setLista ] = useState<Juego[]>([])
+      
+  const httpObtenerJuegos = async () => {
+        const data = await apiClient('/api/games/', {
+              method: 'GET',
+            });
+        setLista(data)
+    }
+  useEffect(() => {
+    httpObtenerJuegos();
+  }, []);
   // Ordenar por ventas (de mayor a menor)
-  const bestSellers = [...lista]
+  const bestSellers = [...juegos]
     .sort((a, b) => b.sales - a.sales)
     .slice(0, 12); // Mostrar los 12 más vendidos
 

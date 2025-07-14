@@ -5,8 +5,7 @@ import { useAuth } from '../Auth/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import type { Juego } from "../../types/juego";
 import SearchResults from "./SearchResults";
-
-const URL = "http://localhost:5000" // URL Base
+import { apiClient } from "../../api/client";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -18,13 +17,17 @@ const Navbar = () => {
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
-    const [ lista, setLista ] = useState<Juego[]>([])
+    const [ juegos, setLista ] = useState<Juego[]>([])
         
-        const httpObtenerTODOs = async () => {
-              const response = await fetch(`${URL}/`)
-              const data = await response.json()
-              setLista(data)
-          }
+      const httpObtenerJuegos = async () => {
+            const data = await apiClient('/api/games/', {
+                  method: 'GET',
+                });
+            setLista(data)
+        }
+      useEffect(() => {
+        httpObtenerJuegos();
+      }, []);
 
     // Manejar búsqueda en tiempo real
     useEffect(() => {
@@ -33,7 +36,7 @@ const Navbar = () => {
             return;
         }
 
-        const results = lista.filter(juego =>
+        const results = juegos.filter(juego =>
             juego.title.toLowerCase().includes(searchQuery.toLowerCase())
         ).slice(0, 5); // Mostrar máximo 5 resultados
 
@@ -72,7 +75,7 @@ const Navbar = () => {
         <nav className="navbar navbar-expand-lg navbar-dark">
             <div className="container">
                 <a className="navbar-brand" href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
-                    <img src="#" alt="Logo" />
+                    <img src="https://e0.pxfuel.com/wallpapers/926/398/desktop-wallpaper-video-games-logo-game-design.jpg" alt="Logo" />
                     GameHub
                 </a>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

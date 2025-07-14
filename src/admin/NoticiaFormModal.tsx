@@ -79,7 +79,7 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode, onSubmit }: NoticiaForm
             <Form.Label>Título *</Form.Label>
             <Form.Control
               type="text"
-              name="titulo"
+              name="title"  // Cambiado de "titulo" a "title"
               value={formData.title || ''}
               onChange={handleChange}
               required
@@ -91,7 +91,7 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode, onSubmit }: NoticiaForm
             <Form.Control
               as="textarea"
               rows={5}
-              name="contenido"
+              name="content"  // Cambiado de "contenido" a "content"
               value={formData.content || ''}
               onChange={handleChange}
               required
@@ -102,7 +102,7 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode, onSubmit }: NoticiaForm
             <Form.Label>URL de la Imagen (opcional)</Form.Label>
             <Form.Control
               type="url"
-              name="imagen"
+              name="image"  // Cambiado de "imagen" a "image"
               value={formData.image || ''}
               onChange={handleChange}
               placeholder="https://ejemplo.com/imagen.jpg"
@@ -113,7 +113,7 @@ const NoticiaFormModal = ({ show, onHide, noticia, mode, onSubmit }: NoticiaForm
             <Form.Label>Autor *</Form.Label>
             <Form.Control
               type="text"
-              name="autor"
+              name="author"  // Cambiado de "autor" a "author"
               value={formData.author || ''}
               onChange={handleChange}
               required

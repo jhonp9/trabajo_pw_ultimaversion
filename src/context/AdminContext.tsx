@@ -95,7 +95,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   // Juegos CRUD
   const addJuego = async (juegoData: Omit<Juego, 'id'>): Promise<Juego | null> => {
     try {
-      const newJuego = await apiClient('/api/games', {
+      const newJuego = await apiClient('/api/games/', {
         method: 'POST',
         body: JSON.stringify(juegoData)
       });
@@ -109,14 +109,22 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const updateJuego = async (id: number, juegoData: Partial<Juego>): Promise<Juego | null> => {
     try {
+      // Asegurar que el trailerUrl sea solo el código
+      const datosValidados = {
+        ...juegoData,
+         price: Number(juegoData.price), // Conversión explícita
+         trailerUrl: juegoData.trailerUrl?.replace(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/i, '$2')
+      };
+      console.log('Datos a enviar:', datosValidados);
       const updatedJuego = await apiClient(`/api/games/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(juegoData)
+        body: JSON.stringify(datosValidados)
       });
+      
       setJuegos(prev => prev.map(j => j.id === id ? updatedJuego : j));
       return updatedJuego;
     } catch (err) {
-      console.error('Error updating game:', err);
+      console.error('Detalles del error:', err); // Log detallado
       throw new Error('Error al actualizar el juego');
     }
   };

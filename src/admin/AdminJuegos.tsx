@@ -10,7 +10,6 @@ const AdminJuegos = () => {
   const {
     juegos,
     loading,
-    error,
     addJuego,
     updateJuego,
     deleteJuego,
@@ -23,6 +22,7 @@ const AdminJuegos = () => {
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Manejar éxito/error
   useEffect(() => {
@@ -63,17 +63,29 @@ const AdminJuegos = () => {
 
   const handleSubmit = async (juegoData: Partial<Juego>) => {
     try {
+      const datosAEnviar = {
+        ...juegoData,
+        genres: juegoData.genres?.length ? juegoData.genres : ['Sin género'],
+        platforms: juegoData.platforms?.length ? juegoData.platforms : ['Sin plataforma'],
+        images: juegoData.images?.filter(img => img.trim() !== '') || [''],
+        requirements: {
+          minimum: juegoData.requirements?.minimum?.filter(req => req.trim() !== '') || [''],
+          recommended: juegoData.requirements?.recommended?.filter(req => req.trim() !== '') || ['']
+        }
+      };
+
       if (formMode === 'add') {
-        await addJuego(juegoData as Omit<Juego, 'id'>);
+        await addJuego(datosAEnviar as Omit<Juego, 'id'>);
         setSuccessMessage('Juego agregado correctamente');
       } else if (formMode === 'edit' && selectedJuego) {
-        await updateJuego(selectedJuego.id, juegoData);
+        await updateJuego(selectedJuego.id, datosAEnviar);
         setSuccessMessage('Juego actualizado correctamente');
       }
       setShowFormModal(false);
       refreshData();
     } catch (error) {
       console.error('Error saving game:', error);
+      setError('Error al guardar: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   };
 

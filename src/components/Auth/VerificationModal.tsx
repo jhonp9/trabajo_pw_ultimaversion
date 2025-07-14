@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 
 interface VerificationModalProps {

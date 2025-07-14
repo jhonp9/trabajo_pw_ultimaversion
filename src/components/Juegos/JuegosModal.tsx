@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../Auth/AuthContext';
 import type { Juego, Review } from '../../types/juego';
 import ReactPlayer from 'react-player';
+import { apiClient } from '../../api/client';
 
 interface JuegoModalProps {
   show: boolean;
@@ -16,7 +17,32 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
   const { user } = useAuth();
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>('');
-  const [reviews, setReviews] = useState<Review[]>(juego?.reviews || []);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [reviewError, setReviewError] = useState('');
+  const { showNotification } = useCart();
+
+  useEffect(() => {
+    if (show && juego) {
+      fetchGameReviews();
+    }
+  }, [show, juego]);
+
+  const fetchGameReviews = async () => {
+    try {
+      setLoadingReviews(true);
+      const response = await apiClient(`/api/reviews/${juego?.id}`, {
+              method: 'GET',
+            });
+      setReviews(response.data);
+      setReviewError('');
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      setReviewError('Error al cargar las reseñas');
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
   if (!juego) return null;
 
@@ -29,22 +55,36 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
     onHide();
   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !comment || rating === 0) return;
+    if (!user || !comment || rating === 0 || !juego) return;
     
-    const newReview: Review = {
-      id: Date.now().toString(),
-      author: user.name || 'Anónimo',
-      rating,
-      comment,
-      date: new Date().toLocaleDateString()
-    };
-    
-    setReviews([...reviews, newReview]);
-    setRating(0);
-    setComment('');
+    try {
+      // Verificar si el usuario ha comprado el juego
+      const hasPurchased = await apiClient(`/api/users/${user.id}/purchases/check-game/${juego.id}`, {
+        method: 'GET'
+      });
+
+      if (!hasPurchased.success) {
+        showNotification('Debes comprar el juego antes de reseñarlo');
+        return;
+      }
+
+      const data = { rating, comment };
+      const response = await apiClient(`/api/reviews/${juego.id}`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+        
+      setReviews([response.data, ...reviews]);
+      setRating(0);
+      setComment('');
+      showNotification('Reseña enviada con éxito');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      showNotification('Error al enviar la reseña');
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -54,12 +94,6 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
         <span key={i}>☆</span>
     ));
   };
-
-  const getYouTubeId = (url: string) => {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
-};
 
   return (
     <Modal show={show} onHide={onHide} size="lg" centered scrollable className="game-modal">
@@ -136,9 +170,19 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
         </Row>
 
         {/* Sección de Reseñas */}
-        <h4 className="mt-4 mb-3">Reseñas</h4>
+       <h4 className="mt-4 mb-3">Reseñas</h4>
+      
+        {reviewError && (
+          <div className="alert alert-danger">{reviewError}</div>
+        )}
         
-        {reviews.length === 0 ? (
+        {loadingReviews ? (
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        ) : reviews.length === 0 ? (
           <p>No hay reseñas todavía. ¡Sé el primero en opinar!</p>
         ) : (
           <div className="reviews-container mb-4">
@@ -146,7 +190,9 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
               <div key={review.id} className="review-item mb-3 p-3" style={{ backgroundColor: '#1e1e1e', borderRadius: '8px' }}>
                 <div className="d-flex justify-content-between mb-2">
                   <strong>{review.author}</strong>
-                  <small className="text-muted">{review.date}</small>
+                  <small className="text-muted">
+                    {new Date(review.date).toLocaleDateString()}
+                  </small>
                 </div>
                 <div className="mb-2">
                   {renderStars(review.rating)}
@@ -192,7 +238,7 @@ const JuegoModal: React.FC<JuegoModalProps> = ({ show, onHide, juego }) => {
               />
             </Form.Group>
             
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" disabled={!comment || rating === 0}>
               Enviar Reseña
             </Button>
           </Form>

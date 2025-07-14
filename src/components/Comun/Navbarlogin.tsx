@@ -6,7 +6,7 @@ const Navbarlogin = () => {
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <img 
-            src="https://via.placeholder.com/40x40/00ff88/000000?text=GH" 
+            src="https://e0.pxfuel.com/wallpapers/926/398/desktop-wallpaper-video-games-logo-game-design.jpg" 
             alt="GameHub Logo" 
             className="me-2"
             style={{ borderRadius: '50%' }}
