@@ -49,18 +49,24 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const itemsCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   // Cargar juegos comprados del usuario al iniciar
-  useEffect(() => {
-    if (user) {
-      fetch(`http://localhost:5000/api/auth/user/${user.email}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.purchasedGames) {
-            setPurchasedGames(data.purchasedGames);
-          }
-        })
-        .catch(error => console.error('Error loading purchased games:', error));
+  const loadPurchasedGames = async () => {
+  if (user) {
+    try {
+      const response = await fetch(https://trabajo-pw-backend-otv4.onrender.com/api/auth/user/${user.email});
+      const data = await response.json();
+      if (data.purchasedGames) {
+        setPurchasedGames(data.purchasedGames);
+      }
+    } catch (error) {
+      console.error('Error loading purchased games:', error);
     }
-  }, [user]);
+  }
+};
+
+// Cargar juegos comprados al iniciar
+useEffect(() => {
+  loadPurchasedGames();
+}, [user]);
 
   // Añadir al carrito
   const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
